@@ -15,5 +15,8 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="restart_title">Reboot device?</string>
+    <string name="reboot_message">Rebooting is needed to complete the update. Reboot now?</string>
     <string name="verifying_update">Verifying update…</string>
+    <string name="update_complete">Update complete!</string>
+    <string name="update_delete_notice">Updates will be deleted upon application.</string>
 </resources>

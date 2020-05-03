@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemProperties;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     private TextView mUpdateSize;
     private TextView mVersionView;
 
+    private int mAccent;
     private final String TAG = "Updater";
 
     @Override
@@ -49,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mUpdateProgressText = (TextView) findViewById(R.id.progressText);
         mUpdateSize = (TextView) findViewById(R.id.update_size);
         mVersionView = (TextView) findViewById(R.id.version_view);
-        mUpdateControl.setBackgroundColor(Utilities.getSystemAccent(this));
+        mAccent = Utilities.getSystemAccent(this);
+        mUpdateControl.setBackgroundColor(mAccent);
         mCurrentVersionView.setText("Current version: " + SystemProperties.get(Constants.STATIX_VERSION_PROP));
         mVersionView.setText(SystemProperties.get(Constants.STATIX_VERSION_PROP).split("-")[0]);
 
@@ -64,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             if (buttonText.equals(cancel)) {
                 mUpdateHandler.cancel();
                 Log.d(TAG, "Update cancelled");
+                mUpdateProgress.setVisibility(View.INVISIBLE);
+                mUpdateProgressText.setVisibility(View.INVISIBLE);
+                mPauseResume.setVisibility(View.INVISIBLE);
                 mUpdateControl.setText(R.string.reboot_device);
             } else if (buttonText.equals(check)) {
                 mUpdate = Utilities.checkForUpdates(getApplicationContext());
@@ -77,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         });
 
         setUpView();
-
     }
 
     private void setUpView() {
@@ -122,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             switch (state) {
                 case Constants.UPDATE_FAILED:
                     mUpdate.setProgress(0);
-                    mUpdateProgressText.setText("0");
+                    mUpdateProgressText.setText("Update failed. Reboot to try again.");
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
                     break;
@@ -134,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mPauseResume.setVisibility(View.VISIBLE);
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateControl.setText(R.string.cancel_update);
-                    mUpdateProgressText.setText("Installing..." + Integer.toString(state));
+                    mUpdateProgressText.setText("Installing... " + Integer.toString(updateProgress) + "%");
                     mUpdateProgress.setVisibility(View.VISIBLE);
                     mUpdateProgress.setProgress(updateProgress);
                     break;
@@ -142,8 +147,10 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mPauseResume.setVisibility(View.INVISIBLE);
                     mUpdateView.setText(R.string.verifying_update);
                 case Constants.UPDATE_SUCCEEDED:
+                    mUpdate.update().delete();
                     mPauseResume.setVisibility(View.INVISIBLE);
                     mUpdateProgress.setVisibility(View.INVISIBLE);
+                    mUpdateProgressText.setText(R.string.update_complete);
                     mUpdateControl.setText(R.string.reboot_device);
                     break;
             }
@@ -162,10 +169,10 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     }
 
     private void showRebootDialog() {
-        new AlertDialog.Builder(getApplicationContext())
+        new AlertDialog.Builder(this)
                 .setTitle(R.string.restart_title)
+                .setMessage(R.string.reboot_message)
                 .setPositiveButton(R.string.ok, (dialog, id) -> rebootDevice())
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+                .setNegativeButton(R.string.cancel, null).show();
     }
 }

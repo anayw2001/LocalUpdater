@@ -54,16 +54,17 @@ public class Utilities {
         return prefixes && versionUpgrade && sameVariant;
     }
 
-//    static void copyUpdate(File source) throws IOException {
-//        File dest = new File("/data/statix_updates/" + source.getName());
-//        try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(dest)) {
-//            byte[] buffer = new byte[1024];
-//            int length;
-//            while ((length = is.read(buffer)) > 0) {
-//                os.write(buffer, 0, length);
-//            }
-//        }
-//    }
+    public static File copyUpdate(File source) throws IOException {
+        File dest = new File("/data/statix_updates/" + source.getName());
+        try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(dest)) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+            return dest;
+        }
+    }
 
     public static ABUpdate checkForUpdates(Context context) {
         File[] updates = lsFiles(context.getExternalFilesDir(null));

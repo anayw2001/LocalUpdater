@@ -1,6 +1,7 @@
 package com.statix.updater;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
 import android.util.Log;
@@ -44,6 +45,14 @@ class ABUpdateHandler {
             mBound = mUpdateEngine.bind(mUpdateEngineCallback);
         }
         try {
+            AsyncTask.execute(() -> {
+                try {
+                    mUpdate.setUpdate(Utilities.copyUpdate(mUpdate.update()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Unable to copy update to internal dir.");
+                }
+            });
             String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());
             Log.d(TAG, java.util.Arrays.toString(payloadProperties));
             long offset = Utilities.getZipOffset(mUpdate.getUpdatePath());
@@ -83,6 +92,9 @@ class ABUpdateHandler {
         @Override
         public void onStatusUpdate(int status, float percent) {
             switch (status) {
+                case UpdateEngine.UpdateStatusConstants.REPORTING_ERROR_EVENT:
+                    mUpdate.setState(Constants.UPDATE_FAILED);
+                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
                 case UpdateEngine.UpdateStatusConstants.DOWNLOADING:
                     mUpdate.setProgress(Math.round(percent * 100));
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS);

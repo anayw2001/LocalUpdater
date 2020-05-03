@@ -33,6 +33,10 @@ public class ABUpdate {
         mProgress = progress;
     }
 
+    public void setUpdate(File update) {
+        mUpdate = update;
+    }
+
     public String getUpdatePath() {
         return mUpdate.getAbsolutePath();
     }
