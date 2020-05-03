@@ -53,6 +53,7 @@ class ABUpdateHandler {
             Log.d(TAG, "Applying payload");
             mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
         } catch (IOException e) {
+            e.printStackTrace();
             Log.e(TAG, "Unable to extract update.");
             mUpdate.setState(Constants.UPDATE_FAILED);
             mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
@@ -77,6 +78,7 @@ class ABUpdateHandler {
         mUpdateEngine.cancel();
         mUpdate.setState(Constants.UPDATE_STOPPED);
     }
+
     private final UpdateEngineCallback mUpdateEngineCallback = new UpdateEngineCallback() {
         @Override
         public void onStatusUpdate(int status, float percent) {
@@ -93,15 +95,13 @@ class ABUpdateHandler {
                 case UpdateEngine.UpdateStatusConstants.VERIFYING:
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_VERIFYING);
                     mUpdate.setState(Constants.UPDATE_VERIFYING);
+                break;
                 case UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT: {
                     mUpdate.setState(Constants.UPDATE_SUCCEEDED);
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_SUCCEEDED);
                 }
                 break;
-                case UpdateEngine.UpdateStatusConstants.IDLE: {
-                    Utilities.cleanUpdateDir(mContext);
-                }
-                break;
+                case UpdateEngine.UpdateStatusConstants.IDLE:
             }
         }
 

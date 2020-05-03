@@ -44,6 +44,7 @@ public class Utilities {
         String variant = SystemProperties.get(Constants.STATIX_BUILD_TYPE_PROP);
         // upgrade build properties
         String[] split = updateName.split("-");
+        Log.d("Updater", java.util.Arrays.toString(split));
         String upgradePrefix = split[0];
         double upgradeVersion = Double.parseDouble(split[4].substring(1));
         String upgradeVariant = split[5].split("\\.")[0];
@@ -53,7 +54,7 @@ public class Utilities {
         return prefixes && versionUpgrade && sameVariant;
     }
 
-//    static void copyFile(File source) throws IOException {
+//    static void copyUpdate(File source) throws IOException {
 //        File dest = new File("/data/statix_updates/" + source.getName());
 //        try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(dest)) {
 //            byte[] buffer = new byte[1024];
@@ -66,6 +67,7 @@ public class Utilities {
 
     public static ABUpdate checkForUpdates(Context context) {
         File[] updates = lsFiles(context.getExternalFilesDir(null));
+        Log.d("Updater", java.util.Arrays.toString(updates));
         if (updates != null) {
             for (File update : updates) {
                 if (isUpdate(update)) {
@@ -132,8 +134,10 @@ public class Utilities {
 
     public static void cleanUpdateDir(Context context) {
         File[] updateDirPush = lsFiles(context.getExternalFilesDir(null));
-        for (File f : updateDirPush) {
-            f.delete();
+        if (updateDirPush != null) {
+            for (File f : updateDirPush) {
+                f.delete();
+            }
         }
     }
 }
