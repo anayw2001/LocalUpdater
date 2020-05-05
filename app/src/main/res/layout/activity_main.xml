@@ -37,6 +37,7 @@
         android:text="@string/welcome"
         android:textAlignment="center"
         android:textColor="?android:attr/textColorPrimary"
+        android:fontFamily="@*android:string/config_bodyFontFamily"
         android:textSize="48sp" />
 
     <TextView
@@ -47,6 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/textView"
         android:textAlignment="viewStart"
+        android:fontFamily="@*android:string/config_bodyFontFamily"
         android:textSize="18sp" />
 
     <TextView
@@ -57,6 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/current_version_view"
         android:textAlignment="viewStart"
+        android:fontFamily="@*android:string/config_bodyFontFamily"
         android:textSize="18sp" />
 
     <TextView
@@ -67,6 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/update_view"
         android:textAlignment="viewStart"
+        android:fontFamily="@*android:string/config_bodyFontFamily"
         android:textSize="18sp" />
 
     <LinearLayout
@@ -80,6 +84,7 @@
             android:id="@+id/progressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@*android:string/config_bodyFontFamily"
             android:textSize="18sp" />
 
         <ProgressBar
@@ -98,6 +103,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@*android:string/config_bodyFontFamily"
             android:text="@string/update_delete_notice" />
 
         <View

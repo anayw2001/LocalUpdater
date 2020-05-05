@@ -2,13 +2,13 @@ package com.statix.updater;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemProperties;
-import androidx.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,12 +33,12 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     private ImageButton mHistory;
     private MainViewController mController;
     private ProgressBar mUpdateProgress;
+    private SharedPreferences mSharedPrefs;
     private TextView mCurrentVersionView;
     private TextView mUpdateProgressText;
     private TextView mUpdateView;
     private TextView mUpdateSize;
 
-    private SharedPreferences mSharedPrefs;
     private int mAccent;
     private final String TAG = "Updater";
 
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         if (mUpdate != null) {
             mUpdateHandler = ABUpdateHandler.getInstance(mUpdate.update(), getApplicationContext(), mController);
             mController.addUpdateStatusListener(this);
-            if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)) {
+            if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false) || mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false) || mSharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
                 mUpdateHandler.reconnect();
             }
             // apply updoot button
@@ -116,11 +116,12 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             mPauseResume.setOnClickListener(v -> {
                 boolean updatePaused = mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false);
                 if (updatePaused) {
-                    mPauseResume.setText(R.string.resume_update);
-                    mUpdateHandler.suspend();
-                } else {
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateHandler.resume();
+                    mUpdateProgress.setVisibility(View.VISIBLE);
+                } else {
+                    mPauseResume.setText(R.string.resume_update);
+                    mUpdateHandler.suspend();
                 }
             });
             setButtonVisibilities();
@@ -139,6 +140,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         } else if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
             mPauseResume.setVisibility(View.VISIBLE);
             mUpdateControl.setText(R.string.reboot_device);
+        } else if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false)) {
+            mPauseResume.setVisibility(View.VISIBLE);
+            mPauseResume.setText(R.string.pause_update);
+            mUpdateControl.setText(R.string.cancel_update);
+            mUpdateProgress.setVisibility(View.VISIBLE);
         }
     }
 
@@ -164,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mPauseResume.setVisibility(View.VISIBLE);
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateControl.setText(R.string.cancel_update);
-                    mUpdateProgressText.setText(getString(R.string.installing_update, Integer.toString(updateProgress*100)));
+                    mUpdateProgressText.setText(getString(R.string.installing_update, Integer.toString(updateProgress)));
                     mUpdateProgress.setVisibility(View.VISIBLE);
                     mUpdateProgress.setProgress(updateProgress);
                     break;
@@ -192,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     private void rebootDevice() {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        Utilities.putPref(Constants.PREF_INSTALLED_AB, false, getApplicationContext());
         pm.reboot("Update complete");
     }
 

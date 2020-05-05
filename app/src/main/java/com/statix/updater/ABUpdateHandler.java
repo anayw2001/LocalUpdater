@@ -6,8 +6,6 @@ import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -34,9 +32,10 @@ class ABUpdateHandler {
         mUpdateEngine = new UpdateEngine();
     }
 
-    public static synchronized ABUpdateHandler getInstance(File update, Context ctx, MainViewController controller) {
+    public static synchronized ABUpdateHandler getInstance(File update, Context context,
+                                                           MainViewController controller) {
         if (sInstance == null) {
-            sInstance = new ABUpdateHandler(update, ctx, controller);
+            sInstance = new ABUpdateHandler(update, context, controller);
         }
         return sInstance;
     }
@@ -63,27 +62,36 @@ class ABUpdateHandler {
         }
     }
 
+    boolean isBound() {
+        return mBound;
+    }
+
     public void reconnect() {
         if (!mBound) {
             mBound = mUpdateEngine.bind(mUpdateEngineCallback);
+            Log.d(TAG, "Reconnected to update engine");
         }
     }
 
     public void suspend() {
         mUpdateEngine.suspend();
         Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, true, mContext);
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext);
         mUpdate.setState(Constants.UPDATE_PAUSED);
     }
 
     public void resume() {
         mUpdateEngine.resume();
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
         Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext);
         mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
     }
 
     public void cancel() {
-        mUpdateEngine.cancel();
+        Utilities.putPref(Constants.PREF_INSTALLED_AB, false, mContext);
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext);
         Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext);
+        mUpdateEngine.cancel();
         mUpdate.setState(Constants.UPDATE_STOPPED);
     }
 
@@ -121,6 +129,9 @@ class ABUpdateHandler {
             if (errorCode != UpdateEngine.ErrorCodeConstants.SUCCESS) {
                 mUpdate.setProgress(0);
                 mUpdate.setState(Constants.UPDATE_FAILED);
+                Utilities.putPref(Constants.PREF_INSTALLED_AB, false, mContext);
+                Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext);
+                Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext);
                 mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
             }
         }
