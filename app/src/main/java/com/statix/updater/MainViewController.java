@@ -11,7 +11,7 @@ import com.statix.updater.model.ABUpdate;
 import java.util.ArrayList;
 import java.util.List;
 
-class MainViewController {
+public class MainViewController {
     private final String TAG = "MainViewController";
 
     private final Context mContext;

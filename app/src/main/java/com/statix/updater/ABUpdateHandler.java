@@ -45,14 +45,6 @@ class ABUpdateHandler {
             mBound = mUpdateEngine.bind(mUpdateEngineCallback);
         }
         try {
-            AsyncTask.execute(() -> {
-                try {
-                    mUpdate.setUpdate(Utilities.copyUpdate(mUpdate.update()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Unable to copy update to internal dir.");
-                }
-            });
             String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());
             Log.d(TAG, java.util.Arrays.toString(payloadProperties));
             long offset = Utilities.getZipOffset(mUpdate.getUpdatePath());
@@ -71,6 +63,12 @@ class ABUpdateHandler {
 
     boolean isBound() {
         return mBound;
+    }
+
+    public void reconnect() {
+        if (!mBound) {
+            mBound = mUpdateEngine.bind(mUpdateEngineCallback);
+        }
     }
 
     public void suspend() {
@@ -122,6 +120,7 @@ class ABUpdateHandler {
             if (errorCode != UpdateEngine.ErrorCodeConstants.SUCCESS) {
                 mUpdate.setProgress(0);
                 mUpdate.setState(Constants.UPDATE_FAILED);
+                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
             }
         }
     };

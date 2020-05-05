@@ -1,9 +1,10 @@
 package com.statix.updater.model;
 
 import java.io.File;
+import java.io.Serializable;
 
 /** Represents an A/B update */
-public class ABUpdate {
+public class ABUpdate implements Serializable {
 
     private int mState;
     private File mUpdate;

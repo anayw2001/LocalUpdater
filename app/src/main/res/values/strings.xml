@@ -11,7 +11,7 @@
     <string name="no_update_available">No update available. Push an update to /sdcard/Android/data/com.statix.updater/files/</string>
     <string name="check_for_update">Check for update</string>
     <string name="reboot_device">Reboot device</string>
-    <string name="update_finalizing">Finalizing</string>
+    <string name="update_finalizing">Finalizing %1$s percent complete</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="restart_title">Reboot device?</string>
@@ -19,4 +19,8 @@
     <string name="verifying_update">Verifying update…</string>
     <string name="update_complete">Update complete!</string>
     <string name="update_delete_notice">Updates will be deleted upon application.</string>
+    <string name="installing_update">Installing… %1$s percent complete</string>
+    <string name="update_size">Update size: %1$sM</string>
+    <string name="current_version">Current version: %1$s</string>
+    <string name="to_install">Update zip to install: %1$s</string>
 </resources>
