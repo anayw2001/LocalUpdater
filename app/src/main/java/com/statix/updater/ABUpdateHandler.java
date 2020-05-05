@@ -6,6 +6,8 @@ import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
 import android.util.Log;
 
+import androidx.preference.PreferenceManager;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -32,10 +34,9 @@ class ABUpdateHandler {
         mUpdateEngine = new UpdateEngine();
     }
 
-    public static synchronized ABUpdateHandler getInstance(File update, Context context,
-                                                           MainViewController controller) {
+    public static synchronized ABUpdateHandler getInstance(File update, Context ctx, MainViewController controller) {
         if (sInstance == null) {
-            sInstance = new ABUpdateHandler(update, context, controller);
+            sInstance = new ABUpdateHandler(update, ctx, controller);
         }
         return sInstance;
     }
@@ -52,6 +53,7 @@ class ABUpdateHandler {
             mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
             mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS);
             Log.d(TAG, "Applying payload");
+            Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
             mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,10 +61,6 @@ class ABUpdateHandler {
             mUpdate.setState(Constants.UPDATE_FAILED);
             mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
         }
-    }
-
-    boolean isBound() {
-        return mBound;
     }
 
     public void reconnect() {
@@ -73,16 +71,19 @@ class ABUpdateHandler {
 
     public void suspend() {
         mUpdateEngine.suspend();
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, true, mContext);
         mUpdate.setState(Constants.UPDATE_PAUSED);
     }
 
     public void resume() {
         mUpdateEngine.resume();
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext);
         mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
     }
 
     public void cancel() {
         mUpdateEngine.cancel();
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext);
         mUpdate.setState(Constants.UPDATE_STOPPED);
     }
 

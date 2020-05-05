@@ -8,6 +8,7 @@ import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.statix.updater.model.ABUpdate;
 
@@ -140,5 +141,11 @@ public class Utilities {
                 f.delete();
             }
         }
+    }
+
+    public static void putPref(String preference, boolean newValue, Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean(preference, newValue)
+                .apply();
     }
 }

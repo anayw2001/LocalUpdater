@@ -20,6 +20,11 @@ public class Constants {
     public static final int UPDATE_IN_PROGRESS = 5;
     public static final int UPDATE_VERIFYING = 6;
 
+    // Preference Constants
+    public static final String PREF_INSTALLING_SUSPENDED_AB = "installation_suspended_ab";
+    public static final String PREF_INSTALLING_AB = "installing_ab";
+    public static final String PREF_INSTALLED_AB = "installed_ab";
+
     // History constants
     public static final String HISTORY_PATH = "/data/statix_updates/history/";
 }

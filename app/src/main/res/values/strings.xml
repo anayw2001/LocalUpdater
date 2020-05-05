@@ -23,4 +23,5 @@
     <string name="update_size">Update size: %1$sM</string>
     <string name="current_version">Current version: %1$s</string>
     <string name="to_install">Update zip to install: %1$s</string>
+    <string name="reboot_try_again">Update failed. Reboot to try again.</string>
 </resources>
