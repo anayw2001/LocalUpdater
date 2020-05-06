@@ -19,11 +19,20 @@ public class MainViewController {
     private Handler mBgThread = new Handler();
     private final LocalBroadcastManager mBroadcastManager;
 
+    private static MainViewController sInstance = null;
+
     private final PowerManager.WakeLock mWakeLock;
 
     private List<StatusListener> mListeners = new ArrayList<>();
 
-    public MainViewController(Context ctx) {
+    public static synchronized MainViewController getInstance(Context ctx) {
+        if (sInstance == null) {
+            sInstance = new MainViewController(ctx);
+        }
+        return sInstance;
+    }
+
+    private MainViewController(Context ctx) {
         mBroadcastManager = LocalBroadcastManager.getInstance(ctx);
         mContext = ctx;
         PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);

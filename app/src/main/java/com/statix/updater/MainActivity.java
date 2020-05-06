@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mController = new MainViewController(getApplicationContext());
+        mController = MainViewController.getInstance(getApplicationContext());
         // set up views
         mUpdateProgress = (ProgressBar) findViewById(R.id.progress_bar);
         mUpdateProgress.setVisibility(View.INVISIBLE);
@@ -160,10 +160,9 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     @Override
     public void onUpdateStatusChanged(ABUpdate update, int state) {
+        int updateProgress = update.getProgress();
+        File f = new File(Constants.HISTORY_PATH);
         runOnUiThread(() -> {
-            int updateProgress = update.getProgress();
-            File f = new File(Constants.HISTORY_PATH);
-            mUpdate.setState(state);
             switch (state) {
                 case Constants.UPDATE_FAILED:
                     update.setProgress(0);
@@ -185,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mPauseResume.setVisibility(View.VISIBLE);
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateControl.setText(R.string.cancel_update);
+                    mUpdateProgressText.setVisibility(View.VISIBLE);
                     mUpdateProgressText.setText(getString(R.string.installing_update, Integer.toString(updateProgress)));
                     mUpdateProgress.setVisibility(View.VISIBLE);
                     mUpdateProgress.setProgress(updateProgress);
@@ -217,22 +217,20 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     @Override
     protected void onResume() {
-        mUpdate = Utilities.checkForUpdates(getApplicationContext());
-        if (mUpdate != null) {
-            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate, getApplicationContext(), mController);
-            mUpdateHandler.reconnect();
-            setUpView();
-        }
         super.onResume();
+        mController.addUpdateStatusListener(this);
+        if (mUpdateHandler != null) {
+            mUpdateHandler.reconnect();
+            Log.d(TAG, "Reconnected to update engine");
+        }
+        setButtonVisibilities();
     }
 
     @Override
     protected void onPause() {
-        mUpdate = Utilities.checkForUpdates(getApplicationContext());
-        if (mUpdate != null) {
-            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate, getApplicationContext(), mController);
-            mUpdateHandler.unbind();
-        }
+        mUpdateHandler.unbind();
+        mController.removeUpdateStatusListener(this);
+        Log.d(TAG, "Unbound callback from update engine");
         super.onPause();
     }
 
