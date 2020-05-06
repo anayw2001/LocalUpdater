@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -61,7 +62,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mAccent = Utilities.getSystemAccent(this);
         mUpdateControl.setBackgroundColor(mAccent);
         mCurrentVersionView.setText(getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP)));
-        mHistory.setOnClickListener(v -> new HistoryView(getApplicationContext()));
+        mHistory.setOnClickListener(v -> {
+            Log.d(TAG, "History imagebutton clicked");
+            Intent histIntent = new Intent(getApplicationContext(), HistoryView.class);
+            startActivity(histIntent);
+        });
 
         // set up prefs
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
