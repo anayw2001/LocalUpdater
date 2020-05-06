@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             String updateSizeMB = getString(R.string.update_size, Long.toString(mUpdate.update().length()/(1024*1024)));
             mUpdateSize.setText(updateSizeMB);
             mUpdateControl.setText(R.string.apply_update);
-            mUpdateProgress.getIndeterminateDrawable().setColorFilter(Utilities.getSystemAccent(this),
+            mUpdateProgress.getProgressDrawable().setColorFilter(Utilities.getSystemAccent(this),
                 android.graphics.PorterDuff.Mode.SRC_IN);
             // pause/resume
             mPauseResume.setBackgroundColor(Utilities.getSystemAccent(this));
@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         runOnUiThread(() -> {
             int updateProgress = update.getProgress();
             File f = new File(Constants.HISTORY_PATH + update.update().getName());
+            mUpdate.setState(state);
             switch (state) {
                 case Constants.UPDATE_FAILED:
                     update.setProgress(0);
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     HistoryUtils.writeObject(f, mUpdate);
                     break;
                 case Constants.UPDATE_FINALIZING:
-                    update.setState(state);
+                    mUpdateProgress.setProgress(updateProgress);
                     mUpdateProgressText.setText(getString(R.string.update_finalizing, Integer.toString(updateProgress)));
                     break;
                 case Constants.UPDATE_IN_PROGRESS:

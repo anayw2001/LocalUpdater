@@ -148,4 +148,10 @@ public class Utilities {
                 .putBoolean(preference, newValue)
                 .apply();
     }
+
+    public static void resetPreferences(Context context) {
+        for (String pref : Constants.PREFS_LIST) {
+            putPref(pref, false, context);
+        }
+    }
 }

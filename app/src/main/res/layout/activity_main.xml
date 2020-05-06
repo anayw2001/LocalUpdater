@@ -73,26 +73,24 @@
         android:fontFamily="@*android:string/config_bodyFontFamily"
         android:textSize="18sp" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/progressText"
         android:layout_marginStart="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_below="@id/update_size"
-        android:layout_centerHorizontal="true">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@*android:string/config_bodyFontFamily"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/progressText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@*android:string/config_bodyFontFamily"
-            android:textSize="18sp" />
-
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_below="@id/progressText"
+        android:layout_centerHorizontal="true"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        style="@android:style/Widget.Material.Light.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:layout_width="match_parent"
