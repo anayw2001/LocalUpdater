@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             } else if (buttonText.equals(apply)){
                 mUpdateHandler.handleUpdate();
                 mUpdateControl.setText(R.string.cancel_update);
+                mPauseResume.setVisibility(View.VISIBLE);
+                mPauseResume.setText(R.string.pause_update);
             } else { // reboot
                 showRebootDialog();
             }
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     private void setUpView() {
         if (mUpdate != null) {
-            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate.update(), getApplicationContext(), mController);
+            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate, getApplicationContext(), mController);
             mController.addUpdateStatusListener(this);
             if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false) || mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false) || mSharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
                 mUpdateHandler.reconnect();
@@ -160,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     public void onUpdateStatusChanged(ABUpdate update, int state) {
         runOnUiThread(() -> {
             int updateProgress = update.getProgress();
-            File f = new File(Constants.HISTORY_PATH + update.update().getName());
+            File f = new File(Constants.HISTORY_PATH);
             mUpdate.setState(state);
             switch (state) {
                 case Constants.UPDATE_FAILED:
@@ -211,6 +213,27 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     public void onStop() {
         mController.removeUpdateStatusListener(this);
         super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        mUpdate = Utilities.checkForUpdates(getApplicationContext());
+        if (mUpdate != null) {
+            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate, getApplicationContext(), mController);
+            mUpdateHandler.reconnect();
+            setUpView();
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        mUpdate = Utilities.checkForUpdates(getApplicationContext());
+        if (mUpdate != null) {
+            mUpdateHandler = ABUpdateHandler.getInstance(mUpdate, getApplicationContext(), mController);
+            mUpdateHandler.unbind();
+        }
+        super.onPause();
     }
 
     private void rebootDevice() {

@@ -1,5 +1,7 @@
 package com.statix.updater.history;
 
+import android.util.Log;
+
 import com.statix.updater.misc.Constants;
 import com.statix.updater.model.ABUpdate;
 import com.statix.updater.model.HistoryCard;
@@ -11,7 +13,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class HistoryUtils {
         }
         JSONObject toWrite = new JSONObject(cardMap);
         String write = toWrite.toString();
+        Log.d("HistoryUtils", write);
         FileWriter fileWriter = new FileWriter(historyFile);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         bufferedWriter.write(write);

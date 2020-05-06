@@ -75,6 +75,7 @@
 
     <TextView
         android:id="@+id/progressText"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="16dp"
         android:layout_below="@id/update_size"
         android:layout_width="wrap_content"
@@ -85,6 +86,7 @@
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_below="@id/progressText"
+        android:layout_marginTop="2dp"
         android:layout_centerHorizontal="true"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

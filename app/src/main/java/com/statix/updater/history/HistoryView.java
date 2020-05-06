@@ -18,13 +18,12 @@ public class HistoryView extends Activity {
         super.onCreate(savedInstanceState);
         setTitle(R.string.history_title);
         addContentView(new HistoryList(getApplicationContext()),
-                new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
+            new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private class HistoryList extends ListView {
-
         public HistoryList(Context context) {
             super(context);
             mContext = context;
