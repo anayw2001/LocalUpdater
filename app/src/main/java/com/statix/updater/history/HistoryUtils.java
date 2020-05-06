@@ -1,73 +1,61 @@
 package com.statix.updater.history;
 
-import android.util.Log;
-
+import com.statix.updater.misc.Constants;
 import com.statix.updater.model.ABUpdate;
+import com.statix.updater.model.HistoryCard;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
+
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class HistoryUtils {
 
-    private static final String TAG = "HistoryUtils";
-
-    static byte[] serialize(Serializable obj) {
-        try {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            ObjectOutputStream objectStream = new ObjectOutputStream(stream);
-            objectStream.writeObject(obj);
-            objectStream.close();
-            return stream.toByteArray();
-        } catch (IOException excp) {
-            Log.e(TAG, "Internal error serializing update.");
-            return null;
+    public static void writeUpdateToJson(File historyFile, ABUpdate update) throws IOException, JSONException {
+        boolean updateSuccessful = update.state() == Constants.UPDATE_SUCCEEDED;
+        String updateName = update.update().getName();
+        ArrayList<HistoryCard> cards = readFromJson(historyFile);
+        cards.add(new HistoryCard(updateName, updateSuccessful));
+        HashMap<String, Boolean> cardMap = new HashMap<>();
+        // convert cards to a map
+        for (HistoryCard card : cards) {
+            cardMap.put(card.getUpdateName(), card.updateSucceeded());
         }
+        JSONObject toWrite = new JSONObject(cardMap);
+        String write = toWrite.toString();
+        FileWriter fileWriter = new FileWriter(historyFile);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write(write);
+        bufferedWriter.close();
     }
 
-    static void writeContents(File file, Object... contents) {
-        try {
-            if (file.isDirectory()) {
-                throw
-                        new IllegalArgumentException("cannot overwrite directory");
-            }
-            BufferedOutputStream str =
-                    new BufferedOutputStream(Files.newOutputStream(file.toPath()));
-            for (Object obj : contents) {
-                if (obj instanceof byte[]) {
-                    str.write((byte[]) obj);
-                } else {
-                    str.write(((String) obj).getBytes(StandardCharsets.UTF_8));
-                }
-            }
-            str.close();
-        } catch (IOException | ClassCastException excp) {
-            Log.e(TAG, "Unable to write history file");
+    public static ArrayList<HistoryCard> readFromJson(File historyFile) throws IOException, JSONException {
+        FileReader fr = new FileReader(historyFile);
+        BufferedReader bufferedReader = new BufferedReader(fr);
+        StringBuilder stringBuilder = new StringBuilder();
+        String line = bufferedReader.readLine();
+        while (line != null){
+            stringBuilder.append(line).append("\n");
+            line = bufferedReader.readLine();
         }
-    }
-
-    public static void writeObject(File file, Serializable obj) {
-        writeContents(file, serialize(obj));
-    }
-
-    static ABUpdate readObject(File file) {
-        try {
-            ObjectInputStream in =
-                    new ObjectInputStream(new FileInputStream(file));
-            ABUpdate result = (ABUpdate) in.readObject();
-            in.close();
-            return result;
-        } catch (IOException | ClassCastException
-                | ClassNotFoundException excp) {
-            throw new IllegalArgumentException(excp.getMessage());
+        bufferedReader.close();
+        String updates = stringBuilder.toString();
+        JSONObject historyPairs = new JSONObject(updates);
+        JSONArray updateNames = historyPairs.names();
+        ArrayList<HistoryCard> ret = new ArrayList<>();
+        for (int i = 0; i < updateNames.length(); i++) {
+            boolean success = historyPairs.getBoolean(updateNames.getString(i));
+            ret.add(new HistoryCard(updateNames.getString(i), success));
         }
+        return ret;
     }
-
 }

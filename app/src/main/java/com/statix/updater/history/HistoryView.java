@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.statix.updater.R;
+
 public class HistoryView extends Activity {
 
     private Context mContext;
@@ -14,6 +16,7 @@ public class HistoryView extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.history_title);
         addContentView(new HistoryList(getApplicationContext()),
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -26,7 +29,7 @@ public class HistoryView extends Activity {
             super(context);
             mContext = context;
             mHistoryController = new HistoryController(context);
-            mHistoryController.deserializeUpdates();
+            mHistoryController.getUpdates();
             setAdapter(mHistoryController);
         }
     }

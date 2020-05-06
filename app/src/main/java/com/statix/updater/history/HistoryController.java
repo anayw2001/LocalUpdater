@@ -2,6 +2,7 @@ package com.statix.updater.history;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +14,12 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.statix.updater.R;
 import com.statix.updater.misc.Constants;
-import com.statix.updater.misc.Utilities;
-import com.statix.updater.model.ABUpdate;
 import com.statix.updater.model.HistoryCard;
 
+import org.json.JSONException;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class HistoryController extends BaseAdapter {
@@ -26,20 +28,20 @@ public class HistoryController extends BaseAdapter {
     private Context mContext;
     private LayoutInflater mLayoutInflater;
 
+    private static final String TAG = "HistoryController";
+
     public HistoryController(Context ctx) {
         mContext = ctx;
         mLayoutInflater = LayoutInflater.from(ctx);
         mCards = new ArrayList<>();
     }
 
-    public void deserializeUpdates() {
+    public void getUpdates() {
         File historyFile = new File(Constants.HISTORY_PATH);
-        if (historyFile.exists()) {
-            for (File update : Utilities.lsFiles(historyFile)) {
-                HistoryCard toAdd = new HistoryCard(
-                        HistoryUtils.readObject(update));
-                mCards.add(toAdd);
-            }
+        try {
+            mCards = HistoryUtils.readFromJson(historyFile);
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Unable to find previous updates");
         }
     }
 
@@ -67,7 +69,7 @@ public class HistoryController extends BaseAdapter {
         TextView title = convertView.findViewById(R.id.title);
         title.setText(card.getUpdateName());
         ImageView check = convertView.findViewById(R.id.success_view);
-        int resid = card.updateFailed() ? R.drawable.failed : R.drawable.checkmark;
+        int resid = card.updateSucceeded() ? R.drawable.checkmark : R.drawable.failed;
         Drawable d = ResourcesCompat.getDrawable(mContext.getResources(), resid, null);
         check.setImageDrawable(d);
         return convertView;

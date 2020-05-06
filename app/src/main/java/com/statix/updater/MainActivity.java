@@ -23,7 +23,10 @@ import com.statix.updater.misc.Constants;
 import com.statix.updater.misc.Utilities;
 import com.statix.updater.model.ABUpdate;
 
+import org.json.JSONException;
+
 import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements MainViewController.StatusListener {
 
@@ -166,7 +169,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateProgressText.setText(R.string.reboot_try_again);
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
-                    HistoryUtils.writeObject(f, mUpdate);
+                    try {
+                        HistoryUtils.writeUpdateToJson(f, mUpdate);
+                    } catch (IOException | JSONException e) {
+                        Log.e(TAG, "Unable to write to update history.");
+                    }
                     break;
                 case Constants.UPDATE_FINALIZING:
                     mUpdateProgress.setProgress(updateProgress);
@@ -185,7 +192,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateView.setText(R.string.verifying_update);
                 case Constants.UPDATE_SUCCEEDED:
                     Utilities.cleanUpdateDir(getApplicationContext());
-                    HistoryUtils.writeObject(f, mUpdate);
+                    try {
+                        HistoryUtils.writeUpdateToJson(f, mUpdate);
+                    } catch (IOException | JSONException e) {
+                        Log.e(TAG, "Unable to write to update history.");
+                    }
                     Utilities.putPref(Constants.PREF_INSTALLED_AB, true, getApplicationContext());
                     mPauseResume.setVisibility(View.INVISIBLE);
                     mUpdateProgress.setVisibility(View.INVISIBLE);

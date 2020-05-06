@@ -1,19 +1,20 @@
 package com.statix.updater.model;
-import com.statix.updater.misc.Constants;
 
 public class HistoryCard {
 
-    private ABUpdate mUpdate;
+    private String mName;
+    private boolean mSuccessful;
 
-    public HistoryCard (ABUpdate update) {
-        mUpdate = update;
+    public HistoryCard(String updateName, boolean success) {
+        mName = updateName;
+        mSuccessful = success;
     }
 
     public String getUpdateName() {
-        return mUpdate.update().getName();
+        return mName;
     }
 
-    public boolean updateFailed() {
-        return mUpdate.state() == Constants.UPDATE_FAILED;
+    public boolean updateSucceeded() {
+        return mSuccessful;
     }
 }
