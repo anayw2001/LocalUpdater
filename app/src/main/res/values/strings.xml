@@ -25,4 +25,5 @@
     <string name="to_install">Update zip to install: %1$s</string>
     <string name="reboot_try_again">Update failed. Reboot to try again.</string>
     <string name="history_title">Update history</string>
+    <string name="performance_mode">Performance Mode</string>
 </resources>

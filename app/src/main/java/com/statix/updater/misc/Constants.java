@@ -24,6 +24,7 @@ public class Constants {
     public static final String PREF_INSTALLING_SUSPENDED_AB = "installation_suspended_ab";
     public static final String PREF_INSTALLING_AB = "installing_ab";
     public static final String PREF_INSTALLED_AB = "installed_ab";
+    public static final String ENABLE_AB_PERF_MODE = "ab_perf_mode";
     public static final String[] PREFS_LIST = new String[]{PREF_INSTALLING_SUSPENDED_AB, PREF_INSTALLED_AB, PREF_INSTALLING_AB};
 
     // History constants
