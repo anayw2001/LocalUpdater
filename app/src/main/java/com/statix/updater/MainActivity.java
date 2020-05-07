@@ -66,10 +66,10 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mUpdateControl = (Button) findViewById(R.id.update_control);
         mPauseResume = (Button) findViewById(R.id.pause_resume);
         mHistory = (ImageButton) findViewById(R.id.history_view);
+        mABPerfMode = (Switch) findViewById(R.id.perf_mode_switch);
         mCurrentVersionView = (TextView) findViewById(R.id.current_version_view);
         mUpdateProgressText = (TextView) findViewById(R.id.progressText);
         mUpdateSize = (TextView) findViewById(R.id.update_size);
-        mABPerfMode = (Switch) findViewById(R.id.perf_mode_switch);
         mAccent = Utilities.getSystemAccent(this);
         mUpdateControl.setBackgroundColor(mAccent);
         mCurrentVersionView.setText(getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP)));
@@ -123,7 +123,12 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                 mUpdateHandler.reconnect();
             }
             // ab perf switch
+            mABPerfMode.setVisibility(View.VISIBLE);
             mABPerfMode.setChecked(mSharedPrefs.getBoolean(ENABLE_AB_PERF_MODE, false));
+            mABPerfMode.setOnClickListener(v -> {
+                mUpdateHandler.setPerformanceMode(mABPerfMode.isChecked());
+                Log.d(TAG, Boolean.toString(mSharedPrefs.getBoolean(ENABLE_AB_PERF_MODE, false)));
+            });
             mUpdateHandler.setPerformanceMode(mABPerfMode.isChecked());
             // apply updoot button
             String updateText = getString(R.string.to_install, mUpdate.update().getName());
@@ -137,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             mPauseResume.setBackgroundColor(Utilities.getSystemAccent(this));
             mPauseResume.setVisibility(View.INVISIBLE);
             mPauseResume.setOnClickListener(v -> {
-                boolean updatePaused = mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false);
+                boolean updatePaused = mSharedPrefs.getBoolean(PREF_INSTALLING_SUSPENDED_AB, false);
                 if (updatePaused) {
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateHandler.resume();
@@ -152,23 +157,25 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             mUpdateView.setText(R.string.no_update_available);
             mUpdateControl.setText(R.string.check_for_update);
             mPauseResume.setVisibility(View.INVISIBLE);
+            mABPerfMode.setVisibility(View.INVISIBLE);
         }
     }
 
     private void setButtonVisibilities() {
-        if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)) {
+        if (mSharedPrefs.getBoolean(PREF_INSTALLING_SUSPENDED_AB, false)) {
             mPauseResume.setVisibility(View.VISIBLE);
             mPauseResume.setText(R.string.resume_update);
             mUpdateControl.setText(R.string.cancel_update);
-        } else if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
+        } else if (mSharedPrefs.getBoolean(PREF_INSTALLED_AB, false)) {
             mPauseResume.setVisibility(View.VISIBLE);
             mUpdateControl.setText(R.string.reboot_device);
-        } else if (mSharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false)) {
+        } else if (mSharedPrefs.getBoolean(PREF_INSTALLING_AB, false)) {
             mPauseResume.setVisibility(View.VISIBLE);
             mPauseResume.setText(R.string.pause_update);
             mUpdateControl.setText(R.string.cancel_update);
             mUpdateProgress.setVisibility(View.VISIBLE);
         }
+        mABPerfMode.setChecked(mSharedPrefs.getBoolean(ENABLE_AB_PERF_MODE, false));
     }
 
     @Override
@@ -241,9 +248,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     @Override
     protected void onPause() {
-        mUpdateHandler.unbind();
         mController.removeUpdateStatusListener(this);
-        Log.d(TAG, "Unbound callback from update engine");
+        if (mUpdateHandler != null) {
+            mUpdateHandler.unbind();
+            Log.d(TAG, "Unbound callback from update engine");
+        }
         super.onPause();
     }
 

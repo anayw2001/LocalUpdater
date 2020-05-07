@@ -108,28 +108,17 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="170dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="25dp"
             android:orientation="vertical">
 
-            <LinearLayout
+            <Switch
+                android:id="@+id/perf_mode_switch"
+                android:text="@string/performance_mode"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="2dp"
-                    android:text="@string/performance_mode" />
-
-                <Switch
-                    android:id="@+id/perf_mode_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
+                android:layout_height="wrap_content" />
 
             <View
                 android:layout_width="150dp"
