@@ -1,6 +1,7 @@
 package com.statix.updater.misc;
 
 import android.content.Context;
+import android.os.Environment;
 import android.os.FileUtils;
 import android.os.SystemProperties;
 import android.util.Log;
@@ -12,6 +13,7 @@ import androidx.preference.PreferenceManager;
 
 import com.statix.updater.model.ABUpdate;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +27,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Utilities {
 
@@ -69,15 +72,6 @@ public class Utilities {
             e.printStackTrace();
             Log.e("Utilities", "Unable to copy update");
         }
-    }
-
-    private static File createNewFileWithPermissions(File destination, String name) throws IOException {
-        File update = File.createTempFile(name, ".zip", destination);
-        FileUtils.setPermissions(
-                /* path= */ update,
-                /* mode= */ FileUtils.S_IRWXU | FileUtils.S_IRGRP | FileUtils.S_IROTH,
-                /* uid= */ -1, /* gid= */ -1);
-        return update;
     }
 
     public static ABUpdate checkForUpdates(Context context) {
@@ -166,5 +160,14 @@ public class Utilities {
         for (String pref : Constants.PREFS_LIST) {
             putPref(pref, false, context);
         }
+    }
+
+    private static File createNewFileWithPermissions(File destination, String name) throws IOException {
+        File update = File.createTempFile(name, ".zip", destination);
+        FileUtils.setPermissions(
+                /* path= */ update,
+                /* mode= */ FileUtils.S_IRWXU | FileUtils.S_IRGRP | FileUtils.S_IROTH,
+                /* uid= */ -1, /* gid= */ -1);
+        return update;
     }
 }

@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
-    <color name="cardview_background">@color/cardview_light_background</color>
     <color name="colorAccent">@*android:color/accent_device_default_light</color>
+    <color name="update_successful">#9900EF00</color>
+    <color name="update_unsuccessful">#99FF0000</color>
 </resources>

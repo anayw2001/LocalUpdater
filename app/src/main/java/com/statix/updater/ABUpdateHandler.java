@@ -1,10 +1,12 @@
 package com.statix.updater;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.statix.updater.misc.Constants;
@@ -54,6 +56,7 @@ class ABUpdateHandler {
             Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
             mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
         } catch (IOException e) {
+            e.printStackTrace();
             Log.e(TAG, "Unable to extract update.");
             mUpdate.setState(Constants.UPDATE_FAILED);
             mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);

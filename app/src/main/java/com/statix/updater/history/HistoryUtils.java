@@ -17,6 +17,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class HistoryUtils {
@@ -62,6 +63,7 @@ public class HistoryUtils {
                 boolean success = historyPairs.getBoolean(updateNames.getString(i));
                 ret.add(new HistoryCard(updateNames.getString(i), success));
             }
+            Collections.reverse(ret);
             return ret;
         } else {
             historyFile.createNewFile();

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="cardview_background">@color/cardview_dark_background</color>
     <color name="colorAccent">@*android:color/accent_device_default_dark</color>
 </resources>

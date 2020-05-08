@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import com.statix.updater.R;
 import com.statix.updater.misc.Constants;
 import com.statix.updater.model.HistoryCard;
@@ -65,6 +67,9 @@ public class HistoryController extends BaseAdapter {
             convertView = mLayoutInflater.inflate(R.layout.update_cardview, parent, false);
         }
         HistoryCard card = mCards.get(position);
+        convertView.setBackgroundColor(card.updateSucceeded()
+                ? ResourcesCompat.getColor(mResources, R.color.update_successful, null)
+                : ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null));
         TextView title = convertView.findViewById(R.id.title);
         title.setText(card.getUpdateName());
         String placeholder = mResources.getString(card.updateSucceeded() ? R.string.succeeded : R.string.failed);
