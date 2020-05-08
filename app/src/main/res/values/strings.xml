@@ -25,4 +25,7 @@
     <string name="reboot_try_again">Update failed. Reboot to try again.</string>
     <string name="history_title">Update history</string>
     <string name="performance_mode">Performance Mode</string>
+    <string name="succeeded">Succeeded</string>
+    <string name="failed">Failed</string>
+    <string name="update_status">Update status: %1$s</string>
 </resources>

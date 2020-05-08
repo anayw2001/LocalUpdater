@@ -1,12 +1,10 @@
 package com.statix.updater;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
 import android.util.Log;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.statix.updater.misc.Constants;
@@ -40,13 +38,14 @@ class ABUpdateHandler {
         return sInstance;
     }
 
-    void handleUpdate() {
+    synchronized void handleUpdate() {
         if (!mBound) {
             mBound = mUpdateEngine.bind(mUpdateEngineCallback);
         }
         try {
+            Utilities.copyUpdate(mUpdate);
+            Log.d(TAG, mUpdate.update().toString());
             String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());
-            Log.d(TAG, java.util.Arrays.toString(payloadProperties));
             long offset = Utilities.getZipOffset(mUpdate.getUpdatePath());
             String zipFileUri = "file://" + mUpdate.getUpdatePath();
             mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
@@ -55,15 +54,10 @@ class ABUpdateHandler {
             Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
             mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
         } catch (IOException e) {
-            e.printStackTrace();
             Log.e(TAG, "Unable to extract update.");
             mUpdate.setState(Constants.UPDATE_FAILED);
             mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
         }
-    }
-
-    boolean isBound() {
-        return mBound;
     }
 
     public void reconnect() {

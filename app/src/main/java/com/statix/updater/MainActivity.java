@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate);
+                        HistoryUtils.writeUpdateToJson(f, update);
                     } catch (IOException | JSONException e) {
                         Log.e(TAG, "Unable to write to update history.");
                     }
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                 case Constants.UPDATE_SUCCEEDED:
                     Utilities.cleanUpdateDir(getApplicationContext());
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate);
+                        HistoryUtils.writeUpdateToJson(f, update);
                     } catch (IOException | JSONException e) {
                         Log.e(TAG, "Unable to write to update history.");
                     }

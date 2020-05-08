@@ -2,8 +2,8 @@ package com.statix.updater.misc;
 
 public class Constants {
 
-    // A/B constants
-    public static final int BUFFER_SIZE = 4096;
+    // Data constants
+    public static final String UPDATE_INTERNAL_DIR = "/data/statix_updates/";
 
     // Update constants
     public static String ROM = "statix";
@@ -28,5 +28,5 @@ public class Constants {
     public static final String[] PREFS_LIST = new String[]{PREF_INSTALLING_SUSPENDED_AB, PREF_INSTALLED_AB, PREF_INSTALLING_AB};
 
     // History constants
-    public static final String HISTORY_PATH = "/data/statix_updates/history.json";
+    public static final String HISTORY_PATH = UPDATE_INTERNAL_DIR + "history.json";
 }

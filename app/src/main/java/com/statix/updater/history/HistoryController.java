@@ -1,16 +1,13 @@
 package com.statix.updater.history;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.core.content.res.ResourcesCompat;
 
 import com.statix.updater.R;
 import com.statix.updater.misc.Constants;
@@ -27,13 +24,15 @@ public class HistoryController extends BaseAdapter {
     private ArrayList<HistoryCard> mCards;
     private Context mContext;
     private LayoutInflater mLayoutInflater;
+    private Resources mResources;
 
     private static final String TAG = "HistoryController";
 
-    public HistoryController(Context ctx) {
+    public HistoryController(Context ctx, Resources res) {
         mContext = ctx;
         mLayoutInflater = LayoutInflater.from(ctx);
         mCards = new ArrayList<>();
+        mResources = res;
     }
 
     public void getUpdates() {
@@ -63,15 +62,14 @@ public class HistoryController extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(R.layout.update_cardview, parent);
+            convertView = mLayoutInflater.inflate(R.layout.update_cardview, parent, false);
         }
         HistoryCard card = mCards.get(position);
         TextView title = convertView.findViewById(R.id.title);
         title.setText(card.getUpdateName());
-        ImageView check = convertView.findViewById(R.id.success_view);
-        int resid = card.updateSucceeded() ? R.drawable.checkmark : R.drawable.failed;
-        Drawable d = ResourcesCompat.getDrawable(mContext.getResources(), resid, null);
-        check.setImageDrawable(d);
+        String placeholder = mResources.getString(card.updateSucceeded() ? R.string.succeeded : R.string.failed);
+        TextView updateWasSuccessful = convertView.findViewById(R.id.update_status);
+        updateWasSuccessful.setText(mResources.getString(R.string.update_status, placeholder));
         return convertView;
     }
 }

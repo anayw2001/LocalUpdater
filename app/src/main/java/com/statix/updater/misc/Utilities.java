@@ -1,7 +1,7 @@
 package com.statix.updater.misc;
 
 import android.content.Context;
-import android.os.Environment;
+import android.os.FileUtils;
 import android.os.SystemProperties;
 import android.util.Log;
 import android.util.TypedValue;
@@ -12,7 +12,6 @@ import androidx.preference.PreferenceManager;
 
 import com.statix.updater.model.ABUpdate;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +25,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class Utilities {
 
@@ -38,7 +36,6 @@ public class Utilities {
         String updateName = update.getName();
         // current build properties
         String currentBuild = SystemProperties.get(Constants.STATIX_VERSION_PROP);
-        String[] currentSplit = currentBuild.split("-");
         String device = SystemProperties.get(Constants.DEVICE_PROP);
         String buildPrefix = Constants.ROM + "_" + device;
         double version = Double.parseDouble(currentBuild.substring(1, 4));
@@ -55,16 +52,32 @@ public class Utilities {
         return prefixes && versionUpgrade && sameVariant;
     }
 
-    public static File copyUpdate(File source) throws IOException {
-        File dest = new File("/data/statix_updates/" + source.getName());
-        try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(dest)) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
-            }
-            return dest;
+    public static void copyUpdate(ABUpdate source) {
+        File src = source.update();
+        String name = src.getName();
+        int pos = name.lastIndexOf(".");
+        if (pos > 0) {
+            name = name.substring(0, pos);
         }
+        try {
+            File dest = createNewFileWithPermissions(new File(Constants.UPDATE_INTERNAL_DIR), name);
+            InputStream is = new FileInputStream(src);
+            OutputStream os = new FileOutputStream(dest);
+            FileUtils.copy(is, os);
+            source.setUpdate(dest);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Utilities", "Unable to copy update");
+        }
+    }
+
+    private static File createNewFileWithPermissions(File destination, String name) throws IOException {
+        File update = File.createTempFile(name, ".zip", destination);
+        FileUtils.setPermissions(
+                /* path= */ update,
+                /* mode= */ FileUtils.S_IRWXU | FileUtils.S_IRGRP | FileUtils.S_IROTH,
+                /* uid= */ -1, /* gid= */ -1);
+        return update;
     }
 
     public static ABUpdate checkForUpdates(Context context) {

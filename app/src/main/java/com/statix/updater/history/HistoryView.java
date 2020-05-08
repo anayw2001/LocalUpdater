@@ -27,7 +27,7 @@ public class HistoryView extends Activity {
         public HistoryList(Context context) {
             super(context);
             mContext = context;
-            mHistoryController = new HistoryController(context);
+            mHistoryController = new HistoryController(context, getResources());
             mHistoryController.getUpdates();
             setAdapter(mHistoryController);
         }
