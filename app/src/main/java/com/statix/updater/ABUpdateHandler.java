@@ -123,6 +123,7 @@ class ABUpdateHandler {
                 }
                 break;
                 case UpdateEngine.UpdateStatusConstants.IDLE:
+                    Utilities.cleanInternalDir();
             }
         }
 

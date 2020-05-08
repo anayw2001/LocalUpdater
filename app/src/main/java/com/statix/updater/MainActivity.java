@@ -167,8 +167,9 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             mPauseResume.setText(R.string.resume_update);
             mUpdateControl.setText(R.string.cancel_update);
         } else if (mSharedPrefs.getBoolean(PREF_INSTALLED_AB, false)) {
-            mPauseResume.setVisibility(View.VISIBLE);
+            mPauseResume.setVisibility(View.INVISIBLE);
             mUpdateControl.setText(R.string.reboot_device);
+            mUpdateProgressText.setText(R.string.update_complete);
         } else if (mSharedPrefs.getBoolean(PREF_INSTALLING_AB, false)) {
             mPauseResume.setVisibility(View.VISIBLE);
             mPauseResume.setText(R.string.pause_update);
@@ -182,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     public void onUpdateStatusChanged(ABUpdate update, int state) {
         int updateProgress = update.getProgress();
         File f = new File(Constants.HISTORY_PATH);
+        mUpdate.setState(state);
         runOnUiThread(() -> {
             switch (state) {
                 case Constants.UPDATE_FAILED:
@@ -191,10 +193,11 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
                     try {
-                        HistoryUtils.writeUpdateToJson(f, update);
+                        HistoryUtils.writeUpdateToJson(f, mUpdate);
                     } catch (IOException | JSONException e) {
                         Log.e(TAG, "Unable to write to update history.");
                     }
+                    Utilities.cleanInternalDir();
                     break;
                 case Constants.UPDATE_FINALIZING:
                     mUpdateProgress.setProgress(updateProgress);
@@ -214,8 +217,9 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateView.setText(R.string.verifying_update);
                 case Constants.UPDATE_SUCCEEDED:
                     Utilities.cleanUpdateDir(getApplicationContext());
+                    Utilities.cleanInternalDir();
                     try {
-                        HistoryUtils.writeUpdateToJson(f, update);
+                        HistoryUtils.writeUpdateToJson(f, mUpdate);
                     } catch (IOException | JSONException e) {
                         Log.e(TAG, "Unable to write to update history.");
                     }
@@ -266,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
 
     private void rebootDevice() {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-        Utilities.putPref(Constants.PREF_INSTALLED_AB, false, getApplicationContext());
+        Utilities.resetPreferences(getApplicationContext());
         pm.reboot("Update complete");
     }
 

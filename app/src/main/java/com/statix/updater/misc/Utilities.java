@@ -1,7 +1,6 @@
 package com.statix.updater.misc;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.FileUtils;
 import android.os.SystemProperties;
 import android.util.Log;
@@ -13,7 +12,6 @@ import androidx.preference.PreferenceManager;
 
 import com.statix.updater.model.ABUpdate;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +25,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class Utilities {
 
@@ -146,6 +143,17 @@ public class Utilities {
         if (updateDirPush != null) {
             for (File f : updateDirPush) {
                 f.delete();
+            }
+        }
+    }
+
+    public static void cleanInternalDir() {
+        File[] updateDirInternal = lsFiles(new File(Constants.UPDATE_INTERNAL_DIR));
+        if (updateDirInternal != null) {
+            for (File f : updateDirInternal) {
+                if (!f.getName().equals(Constants.HISTORY_FILE)) {
+                    f.delete();
+                }
             }
         }
     }

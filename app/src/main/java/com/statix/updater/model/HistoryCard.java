@@ -1,6 +1,6 @@
 package com.statix.updater.model;
 
-public class HistoryCard {
+public class HistoryCard implements Comparable {
 
     private String mName;
     private boolean mSuccessful;
@@ -16,5 +16,11 @@ public class HistoryCard {
 
     public boolean updateSucceeded() {
         return mSuccessful;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        HistoryCard other = (HistoryCard) o;
+        return mName.compareTo(other.getUpdateName());
     }
 }

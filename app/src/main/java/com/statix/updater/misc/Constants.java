@@ -28,5 +28,6 @@ public class Constants {
     public static final String[] PREFS_LIST = new String[]{PREF_INSTALLING_SUSPENDED_AB, PREF_INSTALLED_AB, PREF_INSTALLING_AB};
 
     // History constants
-    public static final String HISTORY_PATH = UPDATE_INTERNAL_DIR + "history.json";
+    public static final String HISTORY_FILE = "history.json";
+    public static final String HISTORY_PATH = UPDATE_INTERNAL_DIR + HISTORY_FILE;
 }
