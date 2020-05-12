@@ -19,6 +19,7 @@ public class Constants {
     public static final int UPDATE_SUCCEEDED = 4;
     public static final int UPDATE_IN_PROGRESS = 5;
     public static final int UPDATE_VERIFYING = 6;
+    public static final int PREPARING_UPDATE = 7;
 
     // Preference Constants
     public static final String PREF_INSTALLING_SUSPENDED_AB = "installation_suspended_ab";

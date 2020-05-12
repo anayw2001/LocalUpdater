@@ -26,9 +26,6 @@ public class HistoryUtils {
         boolean updateSuccessful = update.state() == Constants.UPDATE_SUCCEEDED;
         String updateName = update.update().getName();
         ArrayList<HistoryCard> cards = readFromJson(historyFile);
-        if (cards == null) {
-            cards = new ArrayList<>();
-        }
         cards.add(new HistoryCard(updateName, updateSuccessful));
         Collections.sort(cards);
         HashMap<String, Boolean> cardMap = new HashMap<>();
@@ -57,6 +54,9 @@ public class HistoryUtils {
             }
             bufferedReader.close();
             String updates = stringBuilder.toString();
+            if (updates == null || updates.isEmpty()) {
+                return new ArrayList<HistoryCard>();
+            }
             JSONObject historyPairs = new JSONObject(updates);
             JSONArray updateNames = historyPairs.names();
             ArrayList<HistoryCard> ret = new ArrayList<>();
@@ -69,7 +69,7 @@ public class HistoryUtils {
             return ret;
         } else {
             historyFile.createNewFile();
-            return null;
+            return new ArrayList<HistoryCard>();
         }
     }
 }

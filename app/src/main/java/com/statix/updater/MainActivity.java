@@ -186,10 +186,15 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mUpdate.setState(state);
         runOnUiThread(() -> {
             switch (state) {
+                case Constants.PREPARING_UPDATE:
+                    mUpdateProgressText.setText(R.string.preparing_update);
+                    mUpdateProgress.setVisibility(View.INVISIBLE);
+                    mUpdateControl.setVisibility(View.INVISIBLE);
                 case Constants.UPDATE_FAILED:
                     update.setProgress(0);
                     mUpdateProgress.setVisibility(View.INVISIBLE);
                     mUpdateProgressText.setText(R.string.reboot_try_again);
+                    mUpdateControl.setVisibility(View.VISIBLE);
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
                     try {
@@ -204,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateProgressText.setText(getString(R.string.update_finalizing, Integer.toString(updateProgress)));
                     break;
                 case Constants.UPDATE_IN_PROGRESS:
+                    mUpdateControl.setVisibility(View.VISIBLE);
                     mPauseResume.setVisibility(View.VISIBLE);
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateControl.setText(R.string.cancel_update);

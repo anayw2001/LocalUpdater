@@ -44,23 +44,26 @@ class ABUpdateHandler {
         if (!mBound) {
             mBound = mUpdateEngine.bind(mUpdateEngineCallback);
         }
-        try {
-            Utilities.copyUpdate(mUpdate);
-            Log.d(TAG, mUpdate.update().toString());
-            String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());
-            long offset = Utilities.getZipOffset(mUpdate.getUpdatePath());
-            String zipFileUri = "file://" + mUpdate.getUpdatePath();
-            mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
-            mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS);
-            Log.d(TAG, "Applying payload");
-            Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
-            mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Unable to extract update.");
-            mUpdate.setState(Constants.UPDATE_FAILED);
-            mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
-        }
+        AsyncTask.execute(() -> {
+            try {
+                mController.notifyUpdateStatusChanged(mUpdate, Constants.PREPARING_UPDATE);
+                Utilities.copyUpdate(mUpdate);
+                Log.d(TAG, mUpdate.update().toString());
+                String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());
+                long offset = Utilities.getZipOffset(mUpdate.getUpdatePath());
+                String zipFileUri = "file://" + mUpdate.getUpdatePath();
+                mUpdate.setState(Constants.UPDATE_IN_PROGRESS);
+                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS);
+                Log.d(TAG, "Applying payload");
+                Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext);
+                mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(TAG, "Unable to extract update.");
+                mUpdate.setState(Constants.UPDATE_FAILED);
+                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED);
+            }
+        });
     }
 
     public void reconnect() {
