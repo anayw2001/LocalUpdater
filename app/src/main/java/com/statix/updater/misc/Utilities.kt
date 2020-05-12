@@ -10,8 +10,15 @@ import android.view.ContextThemeWrapper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.statix.updater.model.ABUpdate
-import java.io.*
-import java.util.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.util.ArrayList
 import java.util.zip.ZipFile
 
 object Utilities {
@@ -29,7 +36,6 @@ object Utilities {
         val variant = SystemProperties.get(Constants.STATIX_BUILD_TYPE_PROP)
         // upgrade build properties
         val split = updateName.split("-").toTypedArray()
-        Log.d("Updater", Arrays.toString(split))
         val upgradePrefix = split[0]
         val upgradeVersion = split[4].substring(1).toDouble()
         val upgradeVariant = split[5].split("\\.").toTypedArray()[0]
@@ -60,7 +66,6 @@ object Utilities {
 
     fun checkForUpdates(context: Context): ABUpdate? {
         val updates = lsFiles(context.getExternalFilesDir(null))
-        Log.d("Updater", Arrays.toString(updates))
         if (updates != null) {
             for (update in updates) {
                 if (isUpdate(update)) {
