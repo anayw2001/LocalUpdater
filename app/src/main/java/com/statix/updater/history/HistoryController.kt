@@ -1,9 +1,7 @@
 package com.statix.updater.history
 
-import android.content.Context
 import android.content.res.Resources
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -17,9 +15,8 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-class HistoryController(mContext: Context, res: Resources) : BaseAdapter() {
-    private var mCards: ArrayList<HistoryCard>
-    private val mLayoutInflater: LayoutInflater
+class HistoryController(res: Resources) : BaseAdapter() {
+    private var mCards: ArrayList<HistoryCard?>
     private val mResources: Resources
     val updates: Unit
         get() {
@@ -37,7 +34,7 @@ class HistoryController(mContext: Context, res: Resources) : BaseAdapter() {
         return mCards.size
     }
 
-    override fun getItem(position: Int): Any {
+    override fun getItem(position: Int): HistoryCard? {
         return mCards[position]
     }
 
@@ -47,7 +44,7 @@ class HistoryController(mContext: Context, res: Resources) : BaseAdapter() {
 
     override fun getView(position: Int, convertView: View, parent: ViewGroup): View {
         val card = mCards[position]
-        convertView.setBackgroundColor(if (card.updateSucceeded()) ResourcesCompat.getColor(mResources, R.color.update_successful, null) else ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null))
+        convertView.setBackgroundColor(if (card!!.updateSucceeded()) ResourcesCompat.getColor(mResources, R.color.update_successful, null) else ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null))
         val title = convertView.findViewById<TextView>(R.id.title)
         title.text = card.updateName
         val placeholder = mResources.getString(if (card.updateSucceeded()) R.string.succeeded else R.string.failed)
@@ -61,7 +58,6 @@ class HistoryController(mContext: Context, res: Resources) : BaseAdapter() {
     }
 
     init {
-        mLayoutInflater = LayoutInflater.from(mContext)
         mCards = ArrayList()
         mResources = res
     }

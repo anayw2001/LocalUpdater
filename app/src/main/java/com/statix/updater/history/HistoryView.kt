@@ -22,7 +22,7 @@ class HistoryView : Activity() {
     private inner class HistoryList(context: Context) : ListView(context) {
         init {
             mContext = context
-            mHistoryController = HistoryController(context, resources)
+            mHistoryController = HistoryController(resources)
             mHistoryController.updates
             adapter = mHistoryController
         }

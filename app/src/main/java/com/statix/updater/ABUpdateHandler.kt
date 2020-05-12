@@ -12,7 +12,7 @@ import java.io.IOException
 
 internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate, private val mContext: Context, private val mController: MainViewController) {
     private var mBound = false
-    private val mUpdateEngine: UpdateEngine
+    private val mUpdateEngine: UpdateEngine = UpdateEngine()
 
     @Synchronized
     fun handleUpdate() {
@@ -27,7 +27,7 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
                 val payloadProperties = Utilities.getPayloadProperties(mUpdate.update())
                 val offset = Utilities.getZipOffset(mUpdate.updatePath)
                 val zipFileUri = "file://" + mUpdate.updatePath
-                mUpdate.setState(Constants.UPDATE_IN_PROGRESS)
+                mUpdate.state = Constants.UPDATE_IN_PROGRESS
                 mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS)
                 Log.d(TAG, "Applying payload")
                 Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext)
@@ -35,7 +35,7 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
             } catch (e: IOException) {
                 e.printStackTrace()
                 Log.e(TAG, "Unable to extract update.")
-                mUpdate.setState(Constants.UPDATE_FAILED)
+                mUpdate.state = Constants.UPDATE_FAILED
                 mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED)
             }
         }
@@ -52,14 +52,14 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
         mUpdateEngine.suspend()
         Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, true, mContext)
         Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
-        mUpdate.setState(Constants.UPDATE_PAUSED)
+        mUpdate.state = Constants.UPDATE_PAUSED
     }
 
     fun resume() {
         mUpdateEngine.resume()
         Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext)
         Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
-        mUpdate.setState(Constants.UPDATE_IN_PROGRESS)
+        mUpdate.state = Constants.UPDATE_IN_PROGRESS
     }
 
     fun cancel() {
@@ -67,7 +67,7 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
         Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
         Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
         mUpdateEngine.cancel()
-        mUpdate.setState(Constants.UPDATE_STOPPED)
+        mUpdate.state = Constants.UPDATE_STOPPED
     }
 
     fun unbind() {
@@ -79,7 +79,7 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
         override fun onStatusUpdate(status: Int, percent: Float) {
             when (status) {
                 UpdateEngine.UpdateStatusConstants.REPORTING_ERROR_EVENT -> {
-                    mUpdate.setState(Constants.UPDATE_FAILED)
+                    mUpdate.state = Constants.UPDATE_FAILED
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED)
                     mUpdate.progress = Math.round(percent * 100)
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS)
@@ -94,10 +94,10 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
                 }
                 UpdateEngine.UpdateStatusConstants.VERIFYING -> {
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_VERIFYING)
-                    mUpdate.setState(Constants.UPDATE_VERIFYING)
+                    mUpdate.state = Constants.UPDATE_VERIFYING
                 }
                 UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT -> {
-                    mUpdate.setState(Constants.UPDATE_SUCCEEDED)
+                    mUpdate.state = Constants.UPDATE_SUCCEEDED
                     mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_SUCCEEDED)
                 }
                 UpdateEngine.UpdateStatusConstants.IDLE -> Utilities.cleanInternalDir()
@@ -107,7 +107,7 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
         override fun onPayloadApplicationComplete(errorCode: Int) {
             if (errorCode != UpdateEngine.ErrorCodeConstants.SUCCESS) {
                 mUpdate.progress = 0
-                mUpdate.setState(Constants.UPDATE_FAILED)
+                mUpdate.state = Constants.UPDATE_FAILED
                 Utilities.putPref(Constants.PREF_INSTALLED_AB, false, mContext)
                 Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
                 Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
@@ -135,7 +135,4 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
         }
     }
 
-    init {
-        mUpdateEngine = UpdateEngine()
-    }
 }

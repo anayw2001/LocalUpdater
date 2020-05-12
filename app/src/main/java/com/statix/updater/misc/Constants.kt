@@ -5,14 +5,10 @@ object Constants {
     const val UPDATE_INTERNAL_DIR = "/data/statix_updates/"
 
     // Update constants
-    @JvmField
-    var ROM = "statix"
-    @JvmField
-    var DEVICE_PROP = "ro.product.device"
-    @JvmField
-    var STATIX_VERSION_PROP = "ro.statix.version"
-    @JvmField
-    var STATIX_BUILD_TYPE_PROP = "ro.statix.buildtype"
+    const val ROM = "statix"
+    const val DEVICE_PROP = "ro.product.device"
+    const val STATIX_VERSION_PROP = "ro.statix.version"
+    const val STATIX_BUILD_TYPE_PROP = "ro.statix.buildtype"
 
     // Status constants
     const val UPDATE_FINALIZING = 0

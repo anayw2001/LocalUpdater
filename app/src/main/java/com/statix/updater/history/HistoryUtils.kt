@@ -13,11 +13,11 @@ object HistoryUtils {
     @Synchronized
     @Throws(IOException::class, JSONException::class)
     fun writeUpdateToJson(historyFile: File, update: ABUpdate) {
-        val updateSuccessful = update.state() == Constants.UPDATE_SUCCEEDED
+        val updateSuccessful = update.state == Constants.UPDATE_SUCCEEDED
         val updateName = update.update().name
         val cards = readFromJson(historyFile)
         cards.add(HistoryCard(updateName, updateSuccessful))
-        Collections.sort(cards)
+        cards.sortBy { it!!.updateName }
         val cardMap = HashMap<String?, Boolean?>()
         // convert cards to a map
         for (card in cards) {
@@ -56,8 +56,8 @@ object HistoryUtils {
                 val success = historyPairs.getBoolean(updateNames.getString(i))
                 ret.add(HistoryCard(updateNames.getString(i), success))
             }
-            Collections.sort(ret)
-            Collections.reverse(ret)
+            ret.sortBy { it!!.updateName }
+            ret.reverse()
             ret
         } else {
             historyFile.createNewFile()

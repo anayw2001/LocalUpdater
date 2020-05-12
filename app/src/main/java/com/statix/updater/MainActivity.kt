@@ -98,21 +98,21 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
 
     private fun setUpView() {
         if (mUpdate != null) {
-            val updateHandler = ABUpdateHandler.getInstance(mUpdate, applicationContext, mController)
+            val updateHandler = ABUpdateHandler.getInstance(mUpdate!!, applicationContext, mController!!)
             mUpdateHandler = updateHandler
             mController!!.addUpdateStatusListener(this)
             if (mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
                     || mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_AB, false)
                     || mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
-                updateHandler.reconnect()
+                updateHandler!!.reconnect()
             }
             // ab perf switch
             mABPerfMode!!.visibility = View.VISIBLE
             mABPerfMode!!.isChecked = mSharedPrefs!!.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
-            mABPerfMode!!.setOnClickListener { v: View? ->
-                updateHandler.setPerformanceMode(mABPerfMode!!.isChecked)
+            mABPerfMode!!.setOnClickListener {
+                updateHandler!!.setPerformanceMode(mABPerfMode!!.isChecked)
             }
-            updateHandler.setPerformanceMode(mABPerfMode!!.isChecked)
+            updateHandler!!.setPerformanceMode(mABPerfMode!!.isChecked)
             // apply updoot button
             val updateText = getString(R.string.to_install, mUpdate!!.update().name)
             mUpdateView!!.text = updateText
@@ -162,10 +162,10 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
         mABPerfMode!!.isChecked = mSharedPrefs!!.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
     }
 
-    override fun onUpdateStatusChanged(update: ABUpdate?, state: Int) {
-        val updateProgress = update!!.progress
+    override fun onUpdateStatusChanged(update: ABUpdate, state: Int) {
+        val updateProgress = update.progress
         val f = File(Constants.HISTORY_PATH)
-        mUpdate!!.setState(state)
+        mUpdate!!.state = update.state
         runOnUiThread {
             when (state) {
                 Constants.PREPARING_UPDATE -> {
@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
                     mUpdateControl!!.setText(R.string.reboot_device)
                     mPauseResume!!.visibility = View.INVISIBLE
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate)
+                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
                     } catch (e: IOException) {
                         Log.e(TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
                     mUpdateControl!!.setText(R.string.reboot_device)
                     mPauseResume!!.visibility = View.INVISIBLE
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate)
+                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
                     } catch (e: IOException) {
                         Log.e(TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
                     Utilities.cleanUpdateDir(applicationContext)
                     Utilities.cleanInternalDir()
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate)
+                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
                     } catch (e: IOException) {
                         Log.e(TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
                     Utilities.cleanUpdateDir(applicationContext)
                     Utilities.cleanInternalDir()
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate)
+                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
                     } catch (e: IOException) {
                         Log.e(TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {

@@ -12,12 +12,8 @@ import androidx.preference.PreferenceManager
 import com.statix.updater.model.ABUpdate
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.io.InputStreamReader
-import java.io.OutputStream
 import java.util.ArrayList
 import java.util.zip.ZipFile
 
@@ -52,16 +48,8 @@ object Utilities {
         if (pos > 0) {
             name = name.substring(0, pos)
         }
-        try {
-            val dest = createNewFileWithPermissions(File(Constants.UPDATE_INTERNAL_DIR), name)
-            val `is`: InputStream = FileInputStream(src)
-            val os: OutputStream = FileOutputStream(dest)
-            FileUtils.copy(`is`, os)
-            source.setUpdate(dest)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e("Utilities", "Unable to copy update")
-        }
+        val dest = createNewFileWithPermissions(File(Constants.UPDATE_INTERNAL_DIR), name)
+        source.setUpdate(src.copyTo(dest, true))
     }
 
     fun checkForUpdates(context: Context): ABUpdate? {

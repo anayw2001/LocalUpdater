@@ -9,15 +9,14 @@ import java.util.*
 class MainViewController private constructor(private val mContext: Context) {
     private val TAG = "MainViewController"
     private val mUiThread: Handler
-    private val mBgThread = Handler()
     private val mWakeLock: PowerManager.WakeLock
     private val mListeners: MutableList<StatusListener> = ArrayList()
 
     interface StatusListener {
-        fun onUpdateStatusChanged(update: ABUpdate?, state: Int)
+        fun onUpdateStatusChanged(update: ABUpdate, state: Int)
     }
 
-    fun notifyUpdateStatusChanged(update: ABUpdate?, state: Int) {
+    fun notifyUpdateStatusChanged(update: ABUpdate, state: Int) {
         mUiThread.post {
             for (listener in mListeners) {
                 listener.onUpdateStatusChanged(update, state)
@@ -49,7 +48,7 @@ class MainViewController private constructor(private val mContext: Context) {
     init {
         val pm = mContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         mUiThread = Handler(mContext.mainLooper)
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Updater")
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Updater:MainViewController")
         mWakeLock.setReferenceCounted(false)
     }
 }
