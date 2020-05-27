@@ -8,97 +8,104 @@ import android.util.Log
 import com.statix.updater.misc.Constants
 import com.statix.updater.misc.Utilities
 import com.statix.updater.model.ABUpdate
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.math.roundToInt
 
-internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate, private val mContext: Context, private val mController: MainViewController) {
-    private var mBound = false
-    private val mUpdateEngine: UpdateEngine = UpdateEngine()
+internal class ABUpdateHandler private constructor(private val abUpdate: ABUpdate, private val context: Context, private val controller: MainViewController) {
+    private var isBound = false
+    private val updateEngine: UpdateEngine = UpdateEngine()
+    private val coroutineScope = MainScope()
 
     @Synchronized
     fun handleUpdate() {
-        if (!mBound) {
-            mBound = mUpdateEngine.bind(mUpdateEngineCallback)
+        if (!isBound) {
+            isBound = updateEngine.bind(updateEngineCallback)
         }
-        AsyncTask.execute {
+
+        coroutineScope.launch {
             try {
-                mController.notifyUpdateStatusChanged(mUpdate, Constants.PREPARING_UPDATE)
-                Utilities.copyUpdate(mUpdate)
-                Log.d(TAG, mUpdate.update.toString())
-                val payloadProperties = Utilities.getPayloadProperties(mUpdate.update)
-                val offset = Utilities.getZipOffset(mUpdate.updatePath)
-                val zipFileUri = "file://" + mUpdate.updatePath
-                mUpdate.state = Constants.UPDATE_IN_PROGRESS
-                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS)
+                controller.notifyUpdateStatusChanged(abUpdate, Constants.PREPARING_UPDATE)
+                Utilities.copyUpdate(abUpdate)
+                Log.d(TAG, abUpdate.update.toString())
+                val payloadProperties = Utilities.getPayloadProperties(abUpdate.update)
+                val offset = Utilities.getZipOffset(abUpdate.updatePath)
+                val zipFileUri = "file://" + abUpdate.updatePath
+                abUpdate.state = Constants.UPDATE_IN_PROGRESS
+                controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_IN_PROGRESS)
                 Log.d(TAG, "Applying payload")
-                Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext)
-                mUpdateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties)
+                Utilities.putPref(Constants.PREF_INSTALLING_AB, true, context)
+                updateEngine.applyPayload(zipFileUri, offset, 0, payloadProperties)
             } catch (e: IOException) {
                 e.printStackTrace()
                 Log.e(TAG, "Unable to extract update.")
-                mUpdate.state = Constants.UPDATE_FAILED
-                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED)
+                abUpdate.state = Constants.UPDATE_FAILED
+                controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_FAILED)
             }
         }
     }
 
     fun reconnect() {
-        if (!mBound) {
-            mBound = mUpdateEngine.bind(mUpdateEngineCallback)
+        if (!isBound) {
+            isBound = updateEngine.bind(updateEngineCallback)
             Log.d(TAG, "Reconnected to update engine")
         }
     }
 
     fun suspend() {
-        mUpdateEngine.suspend()
-        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, true, mContext)
-        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
-        mUpdate.state = Constants.UPDATE_PAUSED
+        updateEngine.suspend()
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, true, context)
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, context)
+        abUpdate.state = Constants.UPDATE_PAUSED
     }
 
     fun resume() {
-        mUpdateEngine.resume()
-        Utilities.putPref(Constants.PREF_INSTALLING_AB, true, mContext)
-        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
-        mUpdate.state = Constants.UPDATE_IN_PROGRESS
+        updateEngine.resume()
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, true, context)
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, context)
+        abUpdate.state = Constants.UPDATE_IN_PROGRESS
     }
 
     fun cancel() {
-        Utilities.putPref(Constants.PREF_INSTALLED_AB, false, mContext)
-        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
-        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
-        mUpdateEngine.cancel()
-        mUpdate.state = Constants.UPDATE_STOPPED
+        Utilities.putPref(Constants.PREF_INSTALLED_AB, false, context)
+        Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, context)
+        Utilities.putPref(Constants.PREF_INSTALLING_AB, false, context)
+        updateEngine.cancel()
+        abUpdate.state = Constants.UPDATE_STOPPED
+        coroutineScope.cancel()
     }
 
     fun unbind() {
-        mBound = !mUpdateEngine.unbind()
+        isBound = !updateEngine.unbind()
         Log.d(TAG, "Unbound callback from update engine")
     }
 
-    private val mUpdateEngineCallback: UpdateEngineCallback = object : UpdateEngineCallback() {
+    private val updateEngineCallback: UpdateEngineCallback = object : UpdateEngineCallback() {
         override fun onStatusUpdate(status: Int, percent: Float) {
             when (status) {
                 UpdateEngine.UpdateStatusConstants.REPORTING_ERROR_EVENT -> {
-                    mUpdate.state = Constants.UPDATE_FAILED
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED)
-                    mUpdate.progress = Math.round(percent * 100)
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS)
+                    abUpdate.state = Constants.UPDATE_FAILED
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_FAILED)
+                    abUpdate.progress = (percent * 100).roundToInt()
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_IN_PROGRESS)
                 }
                 UpdateEngine.UpdateStatusConstants.DOWNLOADING -> {
-                    mUpdate.progress = Math.round(percent * 100)
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_IN_PROGRESS)
+                    abUpdate.progress = (percent * 100).roundToInt()
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_IN_PROGRESS)
                 }
                 UpdateEngine.UpdateStatusConstants.FINALIZING -> {
-                    mUpdate.progress = Math.round(percent * 100)
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FINALIZING)
+                    abUpdate.progress = (percent * 100).roundToInt()
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_FINALIZING)
                 }
                 UpdateEngine.UpdateStatusConstants.VERIFYING -> {
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_VERIFYING)
-                    mUpdate.state = Constants.UPDATE_VERIFYING
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_VERIFYING)
+                    abUpdate.state = Constants.UPDATE_VERIFYING
                 }
                 UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT -> {
-                    mUpdate.state = Constants.UPDATE_SUCCEEDED
-                    mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_SUCCEEDED)
+                    abUpdate.state = Constants.UPDATE_SUCCEEDED
+                    controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_SUCCEEDED)
                 }
                 UpdateEngine.UpdateStatusConstants.IDLE -> Utilities.cleanInternalDir()
             }
@@ -106,19 +113,19 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
 
         override fun onPayloadApplicationComplete(errorCode: Int) {
             if (errorCode != UpdateEngine.ErrorCodeConstants.SUCCESS) {
-                mUpdate.progress = 0
-                mUpdate.state = Constants.UPDATE_FAILED
-                Utilities.putPref(Constants.PREF_INSTALLED_AB, false, mContext)
-                Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, mContext)
-                Utilities.putPref(Constants.PREF_INSTALLING_AB, false, mContext)
-                mController.notifyUpdateStatusChanged(mUpdate, Constants.UPDATE_FAILED)
+                abUpdate.progress = 0
+                abUpdate.state = Constants.UPDATE_FAILED
+                Utilities.putPref(Constants.PREF_INSTALLED_AB, false, context)
+                Utilities.putPref(Constants.PREF_INSTALLING_SUSPENDED_AB, false, context)
+                Utilities.putPref(Constants.PREF_INSTALLING_AB, false, context)
+                controller.notifyUpdateStatusChanged(abUpdate, Constants.UPDATE_FAILED)
             }
         }
     }
 
     fun setPerformanceMode(checked: Boolean) {
-        mUpdateEngine.setPerformanceMode(checked)
-        Utilities.putPref(Constants.ENABLE_AB_PERF_MODE, checked, mContext)
+        updateEngine.setPerformanceMode(checked)
+        Utilities.putPref(Constants.ENABLE_AB_PERF_MODE, checked, context)
     }
 
     companion object {
