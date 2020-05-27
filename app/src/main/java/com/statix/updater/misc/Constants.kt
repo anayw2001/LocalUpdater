@@ -5,8 +5,7 @@ object Constants {
     const val UPDATE_INTERNAL_DIR = "/data/statix_updates/"
 
     // Update constants
-    const val ROM = "statix"
-    const val DEVICE_PROP = "ro.product.device"
+    const val DEVICE_PROP = "ro.statix.device"
     const val STATIX_VERSION_PROP = "ro.statix.version"
     const val STATIX_BUILD_TYPE_PROP = "ro.statix.buildtype"
 

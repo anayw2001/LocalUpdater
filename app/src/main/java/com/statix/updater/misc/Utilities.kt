@@ -4,9 +4,6 @@ import android.content.Context
 import android.os.FileUtils
 import android.os.SystemProperties
 import android.util.Log
-import android.util.TypedValue
-import android.view.ContextThemeWrapper
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.statix.updater.model.ABUpdate
 import java.io.BufferedReader
@@ -27,8 +24,7 @@ object Utilities {
         val updateName = update.name
         // current build properties
         val currentBuild = SystemProperties.get(Constants.STATIX_VERSION_PROP)
-        val device = SystemProperties.get(Constants.DEVICE_PROP)
-        val buildPrefix = Constants.ROM + "_" + device
+        val buildPrefix = SystemProperties.get(Constants.DEVICE_PROP)
         val version = currentBuild.substring(1, 4).toDouble()
         val variant = SystemProperties.get(Constants.STATIX_BUILD_TYPE_PROP)
         // upgrade build properties
@@ -63,15 +59,6 @@ object Utilities {
             }
         }
         return null
-    }
-
-    fun getSystemAccent(base: AppCompatActivity?): Int {
-        val typedValue = TypedValue()
-        val contextThemeWrapper = ContextThemeWrapper(base,
-                android.R.style.Theme_DeviceDefault)
-        contextThemeWrapper.theme.resolveAttribute(android.R.attr.colorAccent,
-                typedValue, true)
-        return typedValue.data
     }
 
     fun getPayloadProperties(update: File?): Array<String?>? {
