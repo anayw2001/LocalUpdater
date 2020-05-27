@@ -37,11 +37,11 @@ class MainViewController private constructor(private val mContext: Context) {
 
         @JvmStatic
         @Synchronized
-        fun getInstance(ctx: Context): MainViewController? {
+        fun getInstance(ctx: Context): MainViewController {
             if (sInstance == null) {
                 sInstance = MainViewController(ctx)
             }
-            return sInstance
+            return sInstance!!
         }
     }
 

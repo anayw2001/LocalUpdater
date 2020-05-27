@@ -42,14 +42,14 @@ object Utilities {
     }
 
     fun copyUpdate(source: ABUpdate) {
-        val src = source.update()
+        val src = source.update
         var name = src.name
         val pos = name.lastIndexOf(".")
         if (pos > 0) {
             name = name.substring(0, pos)
         }
         val dest = createNewFileWithPermissions(File(Constants.UPDATE_INTERNAL_DIR), name)
-        source.setUpdate(src.copyTo(dest, true))
+        source.update = src.copyTo(dest, true)
     }
 
     fun checkForUpdates(context: Context): ABUpdate? {

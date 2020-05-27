@@ -23,8 +23,8 @@ internal class ABUpdateHandler private constructor(private val mUpdate: ABUpdate
             try {
                 mController.notifyUpdateStatusChanged(mUpdate, Constants.PREPARING_UPDATE)
                 Utilities.copyUpdate(mUpdate)
-                Log.d(TAG, mUpdate.update().toString())
-                val payloadProperties = Utilities.getPayloadProperties(mUpdate.update())
+                Log.d(TAG, mUpdate.update.toString())
+                val payloadProperties = Utilities.getPayloadProperties(mUpdate.update)
                 val offset = Utilities.getZipOffset(mUpdate.updatePath)
                 val zipFileUri = "file://" + mUpdate.updatePath
                 mUpdate.state = Constants.UPDATE_IN_PROGRESS

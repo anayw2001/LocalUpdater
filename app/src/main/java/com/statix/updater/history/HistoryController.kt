@@ -44,10 +44,10 @@ class HistoryController(res: Resources) : BaseAdapter() {
 
     override fun getView(position: Int, convertView: View, parent: ViewGroup): View {
         val card = mCards[position]
-        convertView.setBackgroundColor(if (card!!.updateSucceeded()) ResourcesCompat.getColor(mResources, R.color.update_successful, null) else ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null))
+        convertView.setBackgroundColor(if (card!!.mSuccessful) ResourcesCompat.getColor(mResources, R.color.update_successful, null) else ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null))
         val title = convertView.findViewById<TextView>(R.id.title)
         title.text = card.updateName
-        val placeholder = mResources.getString(if (card.updateSucceeded()) R.string.succeeded else R.string.failed)
+        val placeholder = mResources.getString(if (card.mSuccessful) R.string.succeeded else R.string.failed)
         val updateWasSuccessful = convertView.findViewById<TextView>(R.id.update_status)
         updateWasSuccessful.text = mResources.getString(R.string.update_status, placeholder)
         return convertView

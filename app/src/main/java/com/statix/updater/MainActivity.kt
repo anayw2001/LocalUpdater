@@ -4,15 +4,15 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemProperties
 import android.util.Log
 import android.view.View
-import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
 import androidx.preference.PreferenceManager
 import com.statix.updater.MainViewController.Companion.getInstance
 import com.statix.updater.history.HistoryUtils
@@ -20,270 +20,258 @@ import com.statix.updater.history.HistoryView
 import com.statix.updater.misc.Constants
 import com.statix.updater.misc.Utilities
 import com.statix.updater.model.ABUpdate
+import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONException
 import java.io.File
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
-    private var mUpdateHandler: ABUpdateHandler? = null
-    private var mUpdate: ABUpdate? = null
-    private var mUpdateControl: Button? = null
-    private var mPauseResume: Button? = null
-    private var mHistory: ImageButton? = null
-    private var mController: MainViewController? = null
-    private var mUpdateProgress: ProgressBar? = null
-    private var mSharedPrefs: SharedPreferences? = null
-    private var mABPerfMode: Switch? = null
-    private var mCurrentVersionView: TextView? = null
-    private var mUpdateProgressText: TextView? = null
-    private var mUpdateView: TextView? = null
-    private var mUpdateSize: TextView? = null
-    private var mAccent = 0
-    private val TAG = "Updater"
+
+    private lateinit var updateHandler: ABUpdateHandler
+    private var abUpdate: ABUpdate? = null
+    private lateinit var controller: MainViewController
+    private lateinit var sharedPrefs: SharedPreferences
+    private var accent = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mController = getInstance(applicationContext)
+        controller = getInstance(applicationContext)
+
         // set up views
-        mUpdateProgress = findViewById<View>(R.id.progress_bar) as ProgressBar
-        mUpdateProgress!!.visibility = View.INVISIBLE
-        mUpdateView = findViewById<View>(R.id.update_view) as TextView
-        mUpdateControl = findViewById<View>(R.id.update_control) as Button
-        mPauseResume = findViewById<View>(R.id.pause_resume) as Button
-        mHistory = findViewById<View>(R.id.history_view) as ImageButton
-        mABPerfMode = findViewById<View>(R.id.perf_mode_switch) as Switch
-        mCurrentVersionView = findViewById<View>(R.id.current_version_view) as TextView
-        mUpdateProgressText = findViewById<View>(R.id.progressText) as TextView
-        mUpdateSize = findViewById<View>(R.id.update_size) as TextView
-        mAccent = Utilities.getSystemAccent(this)
-        mUpdateControl!!.setBackgroundColor(mAccent)
-        mCurrentVersionView!!.text = getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP))
-        mHistory!!.setOnClickListener { v: View? ->
-            Log.d(TAG, "History imagebutton clicked")
+        progress_bar!!.visibility = View.INVISIBLE
+        accent = Utilities.getSystemAccent(this)
+        update_control.setBackgroundColor(accent)
+        current_version_view!!.text = getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP))
+        history_view.setOnClickListener {
+            Log.d(LOG_TAG, "History imagebutton clicked")
             val histIntent = Intent(applicationContext, HistoryView::class.java)
             startActivity(histIntent)
         }
 
         // set up prefs
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
         // check for updoots in /sdcard/statix_updates
-        mUpdate = Utilities.checkForUpdates(applicationContext)
-        mUpdateControl!!.setOnClickListener { v: View? ->
-            val buttonText = mUpdateControl!!.text.toString()
+        abUpdate = Utilities.checkForUpdates(applicationContext)
+        update_control.setOnClickListener {
+            val buttonText = update_control!!.text.toString()
             val cancel = getString(R.string.cancel_update)
             val check = getString(R.string.check_for_update)
             val apply = getString(R.string.apply_update)
-            if (buttonText == cancel) {
-                mUpdateHandler!!.cancel()
-                Log.d(TAG, "Update cancelled")
-                mUpdateProgress!!.visibility = View.INVISIBLE
-                mUpdateProgressText!!.visibility = View.INVISIBLE
-                mPauseResume!!.visibility = View.INVISIBLE
-                mUpdateControl!!.setText(R.string.reboot_device)
-            } else if (buttonText == check) {
-                mUpdate = Utilities.checkForUpdates(applicationContext)
-                setUpView()
-            } else if (buttonText == apply) {
-                mUpdateHandler!!.handleUpdate()
-                mUpdateControl!!.setText(R.string.cancel_update)
-                mPauseResume!!.visibility = View.VISIBLE
-                mPauseResume!!.setText(R.string.pause_update)
-            } else { // reboot
-                showRebootDialog()
+            when (buttonText) {
+                cancel -> {
+                    updateHandler.cancel()
+                    Log.d(LOG_TAG, "Update cancelled")
+                    progress_bar.visibility = View.INVISIBLE
+                    progressText.visibility = View.INVISIBLE
+                    pause_resume.visibility = View.INVISIBLE
+                    update_control.text = getString(R.string.reboot_device)
+                }
+                check -> {
+                    abUpdate = Utilities.checkForUpdates(applicationContext)
+                    setUpView()
+                }
+                apply -> {
+                    updateHandler.handleUpdate()
+                    update_control.text = getString(R.string.cancel_update)
+                    pause_resume.visibility = View.VISIBLE
+                    pause_resume.text = getString(R.string.pause_update)
+                }
+                else -> { // reboot
+                    showRebootDialog()
+                }
             }
         }
         setUpView()
     }
 
     private fun setUpView() {
-        if (mUpdate != null) {
-            val updateHandler = ABUpdateHandler.getInstance(mUpdate!!, applicationContext, mController!!)
-            mUpdateHandler = updateHandler
-            mController!!.addUpdateStatusListener(this)
-            if (mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
-                    || mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_AB, false)
-                    || mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
+        if (abUpdate != null) {
+            val updateHandler = ABUpdateHandler.getInstance(abUpdate!!, applicationContext, controller)
+            if (updateHandler != null) {
+                this.updateHandler = updateHandler
+            }
+            controller.addUpdateStatusListener(this)
+            if (sharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
+                    || sharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false)
+                    || sharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
                 updateHandler!!.reconnect()
             }
             // ab perf switch
-            mABPerfMode!!.visibility = View.VISIBLE
-            mABPerfMode!!.isChecked = mSharedPrefs!!.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
-            mABPerfMode!!.setOnClickListener {
-                updateHandler!!.setPerformanceMode(mABPerfMode!!.isChecked)
+            perf_mode_switch.visibility = View.VISIBLE
+            perf_mode_switch.isChecked = sharedPrefs.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
+            perf_mode_switch.setOnClickListener {
+                updateHandler!!.setPerformanceMode(perf_mode_switch.isChecked)
             }
-            updateHandler!!.setPerformanceMode(mABPerfMode!!.isChecked)
+            updateHandler!!.setPerformanceMode(perf_mode_switch.isChecked)
             // apply updoot button
-            val updateText = getString(R.string.to_install, mUpdate!!.update().name)
-            mUpdateView!!.text = updateText
-            val updateSizeMB = getString(R.string.update_size, java.lang.Long.toString(mUpdate!!.update().length() / (1024 * 1024)))
-            mUpdateSize!!.text = updateSizeMB
-            mUpdateControl!!.setText(R.string.apply_update)
-            mUpdateProgress!!.progressDrawable.setColorFilter(Utilities.getSystemAccent(this),
-                    PorterDuff.Mode.SRC_IN)
+            val updateText = getString(R.string.to_install, abUpdate!!.update.name)
+            update_view.text = updateText
+            val updateSizeMB = getString(R.string.update_size, (abUpdate!!.update.length() / (1024 * 1024)).toString())
+            update_size.text = updateSizeMB
+            update_control.text = getString(R.string.apply_update)
+            progress_bar!!.progressDrawable.colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Utilities.getSystemAccent(this),
+                    BlendModeCompat.SRC_IN)
             // pause/resume
-            mPauseResume!!.setBackgroundColor(Utilities.getSystemAccent(this))
-            mPauseResume!!.visibility = View.INVISIBLE
-            mPauseResume!!.setOnClickListener { v: View? ->
-                val updatePaused = mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
+            pause_resume!!.setBackgroundColor(Utilities.getSystemAccent(this))
+            pause_resume!!.visibility = View.INVISIBLE
+            pause_resume!!.setOnClickListener {
+                val updatePaused = sharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
                 if (updatePaused) {
-                    mPauseResume!!.setText(R.string.pause_update)
+                    pause_resume!!.setText(R.string.pause_update)
                     updateHandler.resume()
-                    mUpdateProgress!!.visibility = View.VISIBLE
+                    progress_bar!!.visibility = View.VISIBLE
                 } else {
-                    mPauseResume!!.setText(R.string.resume_update)
+                    pause_resume!!.setText(R.string.resume_update)
                     updateHandler.suspend()
                 }
             }
             setButtonVisibilities()
         } else {
-            mUpdateView!!.setText(R.string.no_update_available)
-            mUpdateControl!!.setText(R.string.check_for_update)
-            mPauseResume!!.visibility = View.INVISIBLE
-            mABPerfMode!!.visibility = View.INVISIBLE
+            update_view.text = getString(R.string.no_update_available)
+            update_control.setText(R.string.check_for_update)
+            pause_resume.visibility = View.INVISIBLE
+            perf_mode_switch.visibility = View.INVISIBLE
         }
     }
 
     private fun setButtonVisibilities() {
-        if (mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)) {
-            mPauseResume!!.visibility = View.VISIBLE
-            mPauseResume!!.setText(R.string.resume_update)
-            mUpdateControl!!.setText(R.string.cancel_update)
-        } else if (mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLED_AB, false)) {
-            mPauseResume!!.visibility = View.INVISIBLE
-            mUpdateControl!!.setText(R.string.reboot_device)
-            mUpdateProgressText!!.setText(R.string.update_complete)
-        } else if (mSharedPrefs!!.getBoolean(Constants.PREF_INSTALLING_AB, false)) {
-            mPauseResume!!.visibility = View.VISIBLE
-            mPauseResume!!.setText(R.string.pause_update)
-            mUpdateControl!!.setText(R.string.cancel_update)
-            mUpdateProgress!!.visibility = View.VISIBLE
+        when {
+            sharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false) -> {
+                pause_resume.visibility = View.VISIBLE
+                pause_resume.text = getString(R.string.resume_update)
+                update_control.text = getString(R.string.cancel_update)
+            }
+            sharedPrefs.getBoolean(Constants.PREF_INSTALLED_AB, false) -> {
+                pause_resume.visibility = View.INVISIBLE
+                update_control.text = getString(R.string.reboot_device)
+                progressText.text = getString(R.string.update_complete)
+            }
+            sharedPrefs.getBoolean(Constants.PREF_INSTALLING_AB, false) -> {
+                pause_resume.visibility = View.VISIBLE
+                pause_resume.text = getString(R.string.pause_update)
+                update_control.text = getString(R.string.cancel_update)
+                progress_bar.visibility = View.VISIBLE
+            }
         }
-        mABPerfMode!!.isChecked = mSharedPrefs!!.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
+        perf_mode_switch.isChecked = sharedPrefs.getBoolean(Constants.ENABLE_AB_PERF_MODE, false)
     }
 
     override fun onUpdateStatusChanged(update: ABUpdate, state: Int) {
         val updateProgress = update.progress
         val f = File(Constants.HISTORY_PATH)
-        mUpdate!!.state = update.state
+        abUpdate!!.state = update.state
         runOnUiThread {
             when (state) {
                 Constants.PREPARING_UPDATE -> {
-                    mUpdateProgressText!!.setText(R.string.preparing_update)
-                    mUpdateProgress!!.visibility = View.INVISIBLE
-                    mUpdateControl!!.visibility = View.INVISIBLE
+                    progressText.text = getString(R.string.preparing_update)
+                    progress_bar.visibility = View.INVISIBLE
+                    update_control.visibility = View.INVISIBLE
                     update.progress = 0
-                    mUpdateProgress!!.visibility = View.INVISIBLE
-                    mUpdateProgressText!!.setText(R.string.reboot_try_again)
-                    mUpdateControl!!.visibility = View.VISIBLE
-                    mUpdateControl!!.setText(R.string.reboot_device)
-                    mPauseResume!!.visibility = View.INVISIBLE
+                    progress_bar.visibility = View.INVISIBLE
+                    progressText.text = getString(R.string.reboot_try_again)
+                    update_control.visibility = View.VISIBLE
+                    update_control.text = getString(R.string.reboot_device)
+                    pause_resume.visibility = View.INVISIBLE
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
+                        HistoryUtils.writeUpdateToJson(f, abUpdate!!)
                     } catch (e: IOException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     }
                     Utilities.cleanInternalDir()
                 }
                 Constants.UPDATE_FAILED -> {
                     update.progress = 0
-                    mUpdateProgress!!.visibility = View.INVISIBLE
-                    mUpdateProgressText!!.setText(R.string.reboot_try_again)
-                    mUpdateControl!!.visibility = View.VISIBLE
-                    mUpdateControl!!.setText(R.string.reboot_device)
-                    mPauseResume!!.visibility = View.INVISIBLE
+                    this.progress_bar.visibility = View.INVISIBLE
+                    progressText.text = getString(R.string.reboot_try_again)
+                    update_control.visibility = View.VISIBLE
+                    update_control.text = getString(R.string.reboot_device)
+                    pause_resume.visibility = View.INVISIBLE
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
+                        HistoryUtils.writeUpdateToJson(f, abUpdate!!)
                     } catch (e: IOException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     }
                     Utilities.cleanInternalDir()
                 }
                 Constants.UPDATE_FINALIZING -> {
-                    mUpdateProgress!!.progress = updateProgress
-                    mUpdateProgressText!!.text = getString(R.string.update_finalizing, Integer.toString(updateProgress))
+                    progress_bar.progress = updateProgress
+                    progressText.text = getString(R.string.update_finalizing, updateProgress.toString())
                 }
                 Constants.UPDATE_IN_PROGRESS -> {
-                    mUpdateControl!!.visibility = View.VISIBLE
-                    mPauseResume!!.visibility = View.VISIBLE
-                    mPauseResume!!.setText(R.string.pause_update)
-                    mUpdateControl!!.setText(R.string.cancel_update)
-                    mUpdateProgressText!!.visibility = View.VISIBLE
-                    mUpdateProgressText!!.text = getString(R.string.installing_update, Integer.toString(updateProgress))
-                    mUpdateProgress!!.visibility = View.VISIBLE
-                    mUpdateProgress!!.progress = updateProgress
+                    update_control.visibility = View.VISIBLE
+                    pause_resume.visibility = View.VISIBLE
+                    pause_resume.text = getString(R.string.pause_update)
+                    update_control.text = getString(R.string.cancel_update)
+                    progressText.visibility = View.VISIBLE
+                    progressText.text = getString(R.string.installing_update, updateProgress.toString())
+                    this.progress_bar.visibility = View.VISIBLE
+                    this.progress_bar.progress = updateProgress
                 }
                 Constants.UPDATE_VERIFYING -> {
-                    mPauseResume!!.visibility = View.INVISIBLE
-                    mUpdateView!!.setText(R.string.verifying_update)
+                    pause_resume.visibility = View.INVISIBLE
+                    update_view.text = getString(R.string.verifying_update)
                     Utilities.cleanUpdateDir(applicationContext)
                     Utilities.cleanInternalDir()
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
+                        HistoryUtils.writeUpdateToJson(f, abUpdate!!)
                     } catch (e: IOException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     }
                     Utilities.putPref(Constants.PREF_INSTALLED_AB, true, applicationContext)
-                    mPauseResume!!.visibility = View.INVISIBLE
-                    mUpdateProgress!!.visibility = View.INVISIBLE
-                    mUpdateProgressText!!.setText(R.string.update_complete)
-                    mUpdateControl!!.setText(R.string.reboot_device)
+                    pause_resume.visibility = View.INVISIBLE
+                    this.progress_bar.visibility = View.INVISIBLE
+                    progressText.text = getString(R.string.update_complete)
+                    update_control.text = getString(R.string.reboot_device)
                 }
                 Constants.UPDATE_SUCCEEDED -> {
                     Utilities.cleanUpdateDir(applicationContext)
                     Utilities.cleanInternalDir()
                     try {
-                        HistoryUtils.writeUpdateToJson(f, mUpdate!!)
+                        HistoryUtils.writeUpdateToJson(f, abUpdate!!)
                     } catch (e: IOException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     } catch (e: JSONException) {
-                        Log.e(TAG, "Unable to write to update history.")
+                        Log.e(LOG_TAG, "Unable to write to update history.")
                     }
                     Utilities.putPref(Constants.PREF_INSTALLED_AB, true, applicationContext)
-                    mPauseResume!!.visibility = View.INVISIBLE
-                    mUpdateProgress!!.visibility = View.INVISIBLE
-                    mUpdateProgressText!!.setText(R.string.update_complete)
-                    mUpdateControl!!.setText(R.string.reboot_device)
+                    pause_resume.visibility = View.INVISIBLE
+                    this.progress_bar.visibility = View.INVISIBLE
+                    progressText.text = getString(R.string.update_complete)
+                    update_control.text = getString(R.string.reboot_device)
                 }
             }
         }
     }
 
     public override fun onStop() {
-        mController!!.removeUpdateStatusListener(this)
+        controller.removeUpdateStatusListener(this)
         super.onStop()
     }
 
     override fun onResume() {
         super.onResume()
         val update = Utilities.checkForUpdates(applicationContext)
-        if (update != null && update != mUpdate) {
-            mUpdate = update
+        if (update != null && update != abUpdate) {
+            abUpdate = update
         }
-        if (mController != null) {
-            mController!!.addUpdateStatusListener(this)
-        }
-        if (mUpdateHandler != null) {
-            mUpdateHandler!!.reconnect()
-            Log.d(TAG, "Reconnected to update engine")
-        }
+        controller.addUpdateStatusListener(this)
+        updateHandler.reconnect()
+        Log.d(LOG_TAG, "Reconnected to update engine")
         setButtonVisibilities()
     }
 
     override fun onPause() {
-        if (mController != null) {
-            mController!!.removeUpdateStatusListener(this)
-        }
-        if (mUpdateHandler != null) {
-            mUpdateHandler!!.unbind()
-            Log.d(TAG, "Unbound callback from update engine")
-        }
+        controller.removeUpdateStatusListener(this)
+        updateHandler.unbind()
+        Log.d(LOG_TAG, "Unbound callback from update engine")
         super.onPause()
     }
 
@@ -297,7 +285,11 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
         AlertDialog.Builder(this)
                 .setTitle(R.string.restart_title)
                 .setMessage(R.string.reboot_message)
-                .setPositiveButton(R.string.ok) { dialog: DialogInterface?, id: Int -> rebootDevice() }
+                .setPositiveButton(R.string.ok) { _: DialogInterface?, _: Int -> rebootDevice() }
                 .setNegativeButton(R.string.cancel, null).show()
+    }
+
+    companion object {
+        private const val LOG_TAG = "Updater"
     }
 }

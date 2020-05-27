@@ -14,14 +14,14 @@ object HistoryUtils {
     @Throws(IOException::class, JSONException::class)
     fun writeUpdateToJson(historyFile: File, update: ABUpdate) {
         val updateSuccessful = update.state == Constants.UPDATE_SUCCEEDED
-        val updateName = update.update().name
+        val updateName = update.update.name
         val cards = readFromJson(historyFile)
         cards.add(HistoryCard(updateName, updateSuccessful))
         cards.sortBy { it!!.updateName }
         val cardMap = HashMap<String?, Boolean?>()
         // convert cards to a map
         for (card in cards) {
-            cardMap[card!!.updateName] = card.updateSucceeded()
+            cardMap[card!!.updateName] = card.mSuccessful
         }
         val toWrite = JSONObject(cardMap as Map<String?, Boolean?>)
         val write = toWrite.toString()
