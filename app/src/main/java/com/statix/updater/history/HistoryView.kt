@@ -8,8 +8,8 @@ import android.widget.ListView
 import com.statix.updater.R
 
 class HistoryView : Activity() {
-    private lateinit var mContext: Context
-    private lateinit var mHistoryController: HistoryController
+    private lateinit var context: Context
+    private lateinit var historyController: HistoryController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTitle(R.string.history_title)
@@ -21,10 +21,10 @@ class HistoryView : Activity() {
 
     private inner class HistoryList(context: Context) : ListView(context) {
         init {
-            mContext = context
-            mHistoryController = HistoryController(resources)
-            mHistoryController.updates
-            adapter = mHistoryController
+            this@HistoryView.context = context
+            historyController = HistoryController(resources)
+            historyController.updates
+            adapter = historyController
         }
     }
 }

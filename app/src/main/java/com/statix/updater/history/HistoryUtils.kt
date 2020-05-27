@@ -18,14 +18,17 @@ object HistoryUtils {
         val cards = readFromJson(historyFile)
         cards.add(HistoryCard(updateName, updateSuccessful))
         cards.sortBy { it!!.updateName }
-        val cardMap = HashMap<String?, Boolean?>()
+        val cardMap = HashMap<String, Boolean>()
+
         // convert cards to a map
         for (card in cards) {
-            cardMap[card!!.updateName] = card.mSuccessful
+            cardMap[card!!.updateName] = card.successful
         }
-        val toWrite = JSONObject(cardMap as Map<String?, Boolean?>)
+
+        val toWrite = JSONObject(cardMap as Map<String, Boolean>)
         val write = toWrite.toString()
         Log.d("HistoryUtils", write)
+
         val fileWriter = FileWriter(historyFile)
         val bufferedWriter = BufferedWriter(fileWriter)
         bufferedWriter.write(write)
@@ -50,7 +53,7 @@ object HistoryUtils {
                 return ArrayList()
             }
             val historyPairs = JSONObject(updates)
-            val updateNames = historyPairs.names()
+            val updateNames = historyPairs.names()!!
             val ret = ArrayList<HistoryCard?>()
             for (i in 0 until updateNames.length()) {
                 val success = historyPairs.getBoolean(updateNames.getString(i))

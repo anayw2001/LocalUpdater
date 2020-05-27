@@ -1,6 +1,5 @@
 package com.statix.updater.misc
 
-import android.R
 import android.content.Context
 import android.os.FileUtils
 import android.os.SystemProperties
@@ -14,15 +13,17 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.ArrayList
+import java.util.*
 import java.util.zip.ZipFile
 
 object Utilities {
-    fun lsFiles(dir: File?): Array<File>? {
+    private const val FIXED_HEADER_SIZE = 30
+
+    private fun lsFiles(dir: File?): Array<File>? {
         return dir!!.absoluteFile.listFiles()
     }
 
-    fun isUpdate(update: File): Boolean {
+    private fun isUpdate(update: File): Boolean {
         val updateName = update.name
         // current build properties
         val currentBuild = SystemProperties.get(Constants.STATIX_VERSION_PROP)
@@ -67,8 +68,8 @@ object Utilities {
     fun getSystemAccent(base: AppCompatActivity?): Int {
         val typedValue = TypedValue()
         val contextThemeWrapper = ContextThemeWrapper(base,
-                R.style.Theme_DeviceDefault)
-        contextThemeWrapper.theme.resolveAttribute(R.attr.colorAccent,
+                android.R.style.Theme_DeviceDefault)
+        contextThemeWrapper.theme.resolveAttribute(android.R.attr.colorAccent,
                 typedValue, true)
         return typedValue.data
     }
@@ -78,8 +79,8 @@ object Utilities {
         return try {
             val zipFile = ZipFile(update)
             val payloadPropEntry = zipFile.getEntry("payload_properties.txt")
-            zipFile.getInputStream(payloadPropEntry).use { `is` ->
-                InputStreamReader(`is`).use { isr ->
+            zipFile.getInputStream(payloadPropEntry).use { stream ->
+                InputStreamReader(stream).use { isr ->
                     BufferedReader(isr).use { br ->
                         val lines: MutableList<String> = ArrayList()
                         var line: String
@@ -100,13 +101,11 @@ object Utilities {
         }
     }
 
-    @Throws(IOException::class)
     fun getZipOffset(zipFilePath: String?): Long {
         val zipFile = ZipFile(zipFilePath)
         // Each entry has an header of (30 + n + m) bytes
         // 'n' is the length of the file name
         // 'm' is the length of the extra field
-        val FIXED_HEADER_SIZE = 30
         val zipEntries = zipFile.entries()
         var offset: Long = 0
         while (zipEntries.hasMoreElements()) {

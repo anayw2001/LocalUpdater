@@ -5,24 +5,24 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import com.statix.updater.R
 import com.statix.updater.misc.Constants
 import com.statix.updater.model.HistoryCard
+import kotlinx.android.synthetic.main.update_cardview.view.*
 import org.json.JSONException
 import java.io.File
 import java.io.IOException
 import java.util.*
 
 class HistoryController(res: Resources) : BaseAdapter() {
-    private var mCards: ArrayList<HistoryCard?>
-    private val mResources: Resources
+    private var cards: ArrayList<HistoryCard?>
+    private val resources: Resources
     val updates: Unit
         get() {
             val historyFile = File(Constants.HISTORY_PATH)
             try {
-                mCards = HistoryUtils.readFromJson(historyFile)
+                cards = HistoryUtils.readFromJson(historyFile)
             } catch (e: IOException) {
                 Log.e(TAG, "Unable to find previous updates")
             } catch (e: JSONException) {
@@ -31,11 +31,11 @@ class HistoryController(res: Resources) : BaseAdapter() {
         }
 
     override fun getCount(): Int {
-        return mCards.size
+        return cards.size
     }
 
     override fun getItem(position: Int): HistoryCard? {
-        return mCards[position]
+        return cards[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -43,13 +43,12 @@ class HistoryController(res: Resources) : BaseAdapter() {
     }
 
     override fun getView(position: Int, convertView: View, parent: ViewGroup): View {
-        val card = mCards[position]
-        convertView.setBackgroundColor(if (card!!.mSuccessful) ResourcesCompat.getColor(mResources, R.color.update_successful, null) else ResourcesCompat.getColor(mResources, R.color.update_unsuccessful, null))
-        val title = convertView.findViewById<TextView>(R.id.title)
+        val card = cards[position]
+        convertView.setBackgroundColor(if (card!!.successful) ResourcesCompat.getColor(resources, R.color.update_successful, null) else ResourcesCompat.getColor(resources, R.color.update_unsuccessful, null))
+        val title = convertView.title
         title.text = card.updateName
-        val placeholder = mResources.getString(if (card.mSuccessful) R.string.succeeded else R.string.failed)
-        val updateWasSuccessful = convertView.findViewById<TextView>(R.id.update_status)
-        updateWasSuccessful.text = mResources.getString(R.string.update_status, placeholder)
+        val placeholder = resources.getString(if (card.successful) R.string.succeeded else R.string.failed)
+        convertView.update_status.text = resources.getString(R.string.update_status, placeholder)
         return convertView
     }
 
@@ -58,7 +57,7 @@ class HistoryController(res: Resources) : BaseAdapter() {
     }
 
     init {
-        mCards = ArrayList()
-        mResources = res
+        cards = ArrayList()
+        resources = res
     }
 }
