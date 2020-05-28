@@ -31,7 +31,7 @@ object Utilities {
         val split = updateName.split("-").toTypedArray()
         val upgradePrefix = split[0]
         val upgradeVersion = split[4].substring(1).toDouble()
-        val upgradeVariant = split[5].split("\\.").toTypedArray()[0]
+        val upgradeVariant = split[5].split(".").get(0)
         val prefixes = buildPrefix == upgradePrefix
         val versionUpgrade = upgradeVersion >= version
         val sameVariant = upgradeVariant == variant
