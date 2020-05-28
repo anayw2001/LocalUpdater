@@ -11,8 +11,6 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
 import androidx.preference.PreferenceManager
 import com.statix.updater.MainViewController.Companion.getInstance
 import com.statix.updater.history.HistoryUtils
@@ -31,7 +29,6 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
     private var abUpdate: ABUpdate? = null
     private val controller by lazy { getInstance(applicationContext) }
     private lateinit var sharedPrefs: SharedPreferences
-    private var accent = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +36,6 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
 
         // set up views
         progress_bar!!.visibility = View.INVISIBLE
-        accent = Utilities.getSystemAccent(this)
-        update_control.setBackgroundColor(accent)
         current_version_view!!.text = getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP))
         history_view.setOnClickListener {
             Log.d(LOG_TAG, "History imagebutton clicked")
@@ -110,10 +105,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
             val updateSizeMB = getString(R.string.update_size, (abUpdate!!.update.length() / (1024 * 1024)).toString())
             update_size.text = updateSizeMB
             update_control.text = getString(R.string.apply_update)
-            progress_bar!!.progressDrawable.colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Utilities.getSystemAccent(this),
-                    BlendModeCompat.SRC_IN)
             // pause/resume
-            pause_resume!!.setBackgroundColor(Utilities.getSystemAccent(this))
             pause_resume!!.visibility = View.INVISIBLE
             pause_resume!!.setOnClickListener {
                 val updatePaused = sharedPrefs.getBoolean(Constants.PREF_INSTALLING_SUSPENDED_AB, false)
