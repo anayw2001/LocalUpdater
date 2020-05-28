@@ -23,7 +23,7 @@ class HistoryView : Activity() {
         init {
             this@HistoryView.context = context
             historyController = HistoryController(resources)
-            historyController.updates
+            historyController.getUpdates()
             adapter = historyController
         }
     }

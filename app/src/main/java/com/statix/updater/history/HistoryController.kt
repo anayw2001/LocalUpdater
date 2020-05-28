@@ -18,17 +18,17 @@ import java.util.*
 class HistoryController(res: Resources) : BaseAdapter() {
     private var cards: ArrayList<HistoryCard?>
     private val resources: Resources
-    val updates: Unit
-        get() {
-            val historyFile = File(Constants.HISTORY_PATH)
-            try {
-                cards = HistoryUtils.readFromJson(historyFile)
-            } catch (e: IOException) {
-                Log.e(TAG, "Unable to find previous updates")
-            } catch (e: JSONException) {
-                Log.e(TAG, "Unable to find previous updates")
-            }
+
+    fun getUpdates() {
+        val historyFile = File(Constants.HISTORY_PATH)
+        try {
+            cards = HistoryUtils.readFromJson(historyFile)
+        } catch (e: IOException) {
+            Log.e(TAG, "Unable to find previous updates")
+        } catch (e: JSONException) {
+            Log.e(TAG, "Unable to find previous updates")
         }
+    }
 
     override fun getCount(): Int {
         return cards.size
