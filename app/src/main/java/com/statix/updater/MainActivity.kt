@@ -27,16 +27,15 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
 
-    private lateinit var updateHandler: ABUpdateHandler
+    private var updateHandler: ABUpdateHandler? = null
     private var abUpdate: ABUpdate? = null
-    private lateinit var controller: MainViewController
+    private val controller by lazy { getInstance(applicationContext) }
     private lateinit var sharedPrefs: SharedPreferences
     private var accent = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        controller = getInstance(applicationContext)
 
         // set up views
         progress_bar!!.visibility = View.INVISIBLE
@@ -61,7 +60,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
             val apply = getString(R.string.apply_update)
             when (buttonText) {
                 cancel -> {
-                    updateHandler.cancel()
+                    updateHandler!!.cancel()
                     Log.d(LOG_TAG, "Update cancelled")
                     progress_bar.visibility = View.INVISIBLE
                     progressText.visibility = View.INVISIBLE
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
                     setUpView()
                 }
                 apply -> {
-                    updateHandler.handleUpdate()
+                    updateHandler!!.handleUpdate()
                     update_control.text = getString(R.string.cancel_update)
                     pause_resume.visibility = View.VISIBLE
                     pause_resume.text = getString(R.string.pause_update)
@@ -263,14 +262,14 @@ class MainActivity : AppCompatActivity(), MainViewController.StatusListener {
             abUpdate = update
         }
         controller.addUpdateStatusListener(this)
-        updateHandler.reconnect()
+        updateHandler?.reconnect()
         Log.d(LOG_TAG, "Reconnected to update engine")
         setButtonVisibilities()
     }
 
     override fun onPause() {
         controller.removeUpdateStatusListener(this)
-        updateHandler.unbind()
+        updateHandler?.unbind()
         Log.d(LOG_TAG, "Unbound callback from update engine")
         super.onPause()
     }
