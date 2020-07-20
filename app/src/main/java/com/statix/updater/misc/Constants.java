@@ -6,8 +6,7 @@ public class Constants {
     public static final String UPDATE_INTERNAL_DIR = "/data/statix_updates/";
 
     // Update constants
-    public static String ROM = "statix";
-    public static String DEVICE_PROP = "ro.product.device";
+    public static String DEVICE_PROP = "ro.statix.device";
     public static String STATIX_VERSION_PROP = "ro.statix.version";
     public static String STATIX_BUILD_TYPE_PROP = "ro.statix.buildtype";
 
@@ -19,7 +18,6 @@ public class Constants {
     public static final int UPDATE_SUCCEEDED = 4;
     public static final int UPDATE_IN_PROGRESS = 5;
     public static final int UPDATE_VERIFYING = 6;
-    public static final int PREPARING_UPDATE = 7;
 
     // Preference Constants
     public static final String PREF_INSTALLING_SUSPENDED_AB = "installation_suspended_ab";

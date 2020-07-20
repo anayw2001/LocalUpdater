@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Atualizador</string>
+    <string name="action_settings">Configurações</string>
+
+    <string name="welcome">StatiXOS</string>
+    <string name="select_update">Selecionar atualização</string>
+    <string name="pause_update">Pausar atualização</string>
+    <string name="resume_update">Continuar atualização</string>
+    <string name="cancel_update">Cancelar atualização</string>
+    <string name="apply_update">Aplicar atualização</string>
+    <string name="no_update_available">Nenhuma atualização disponível. Envie uma atualização para /sdcard/Android/data/com.statix.updater/files/</string>
+    <string name="check_for_update">Procurar atualização</string>
+    <string name="reboot_device">Reiniciar dispositivo</string>
+    <string name="update_finalizing">Finalizando… %1$s%% completo</string>
+    <string name="cancel">Cancelar</string>
+    <string name="ok">OK</string>
+    <string name="restart_title">Reiniciar dispositivo?</string>
+    <string name="reboot_message">Um reinício é necessário para completar a atualização. Reiniciar agora?</string>
+    <string name="verifying_update">Verificando atualização…</string>
+    <string name="update_complete">Atualização completa!</string>
+    <string name="installing_update">Instalando… %1$s%% completo</string>
+    <string name="update_size">Tamanho da atualização: %1$sM</string>
+    <string name="current_version">Versão atual: %1$s</string>
+    <string name="to_install">Atualização a ser instalada: %1$s</string>
+    <string name="reboot_try_again">A atualização falhou. Reinicie para tentar novamente.</string>
+    <string name="history_title">Histórico de atualizações</string>
+    <string name="performance_mode">Modo de Performance</string>
+    <string name="succeeded">Sucesso</string>
+    <string name="failed">Falhou</string>
+    <string name="update_status">Status da atualização: %1$s</string>
+</resources>

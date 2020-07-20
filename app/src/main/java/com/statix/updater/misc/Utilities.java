@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipFile;
@@ -36,13 +38,11 @@ public class Utilities {
         String updateName = update.getName();
         // current build properties
         String currentBuild = SystemProperties.get(Constants.STATIX_VERSION_PROP);
-        String device = SystemProperties.get(Constants.DEVICE_PROP);
-        String buildPrefix = Constants.ROM + "_" + device;
+        String buildPrefix = SystemProperties.get(Constants.DEVICE_PROP);
         double version = Double.parseDouble(currentBuild.substring(1, 4));
         String variant = SystemProperties.get(Constants.STATIX_BUILD_TYPE_PROP);
         // upgrade build properties
         String[] split = updateName.split("-");
-        Log.d("Updater", java.util.Arrays.toString(split));
         String upgradePrefix = split[0];
         double upgradeVersion = Double.parseDouble(split[4].substring(1));
         String upgradeVariant = split[5].split("\\.")[0];
@@ -73,7 +73,8 @@ public class Utilities {
 
     public static ABUpdate checkForUpdates(Context context) {
         File[] updates = lsFiles(context.getExternalFilesDir(null));
-        Log.d("Updater", java.util.Arrays.toString(updates));
+        Collections.sort(Arrays.asList(updates));
+        Collections.reverse(Arrays.asList(updates));
         if (updates != null) {
             for (File update : updates) {
                 if (isUpdate(update)) {
@@ -82,15 +83,6 @@ public class Utilities {
             }
         }
         return null;
-    }
-
-    public static int getSystemAccent(AppCompatActivity base) {
-        TypedValue typedValue = new TypedValue();
-        ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(base,
-                android.R.style.Theme_DeviceDefault);
-        contextThemeWrapper.getTheme().resolveAttribute(android.R.attr.colorAccent,
-                typedValue, true);
-        return typedValue.data;
     }
 
     public static String[] getPayloadProperties(File update) {

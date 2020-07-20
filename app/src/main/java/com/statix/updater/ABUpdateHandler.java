@@ -46,7 +46,6 @@ class ABUpdateHandler {
         }
         AsyncTask.execute(() -> {
             try {
-                mController.notifyUpdateStatusChanged(mUpdate, Constants.PREPARING_UPDATE);
                 Utilities.copyUpdate(mUpdate);
                 Log.d(TAG, mUpdate.update().toString());
                 String[] payloadProperties = Utilities.getPayloadProperties(mUpdate.update());

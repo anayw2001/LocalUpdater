@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
     private TextView mUpdateView;
     private TextView mUpdateSize;
 
-    private int mAccent;
     private final String TAG = "Updater";
 
     @Override
@@ -70,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mCurrentVersionView = (TextView) findViewById(R.id.current_version_view);
         mUpdateProgressText = (TextView) findViewById(R.id.progressText);
         mUpdateSize = (TextView) findViewById(R.id.update_size);
-        mAccent = Utilities.getSystemAccent(this);
-        mUpdateControl.setBackgroundColor(mAccent);
         mCurrentVersionView.setText(getString(R.string.current_version, SystemProperties.get(Constants.STATIX_VERSION_PROP)));
         mHistory.setOnClickListener(v -> {
             Log.d(TAG, "History imagebutton clicked");
@@ -136,10 +133,7 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
             String updateSizeMB = getString(R.string.update_size, Long.toString(mUpdate.update().length()/(1024*1024)));
             mUpdateSize.setText(updateSizeMB);
             mUpdateControl.setText(R.string.apply_update);
-            mUpdateProgress.getProgressDrawable().setColorFilter(Utilities.getSystemAccent(this),
-                android.graphics.PorterDuff.Mode.SRC_IN);
             // pause/resume
-            mPauseResume.setBackgroundColor(Utilities.getSystemAccent(this));
             mPauseResume.setVisibility(View.INVISIBLE);
             mPauseResume.setOnClickListener(v -> {
                 boolean updatePaused = mSharedPrefs.getBoolean(PREF_INSTALLING_SUSPENDED_AB, false);
@@ -186,15 +180,10 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
         mUpdate.setState(state);
         runOnUiThread(() -> {
             switch (state) {
-                case Constants.PREPARING_UPDATE:
-                    mUpdateProgressText.setText(R.string.preparing_update);
-                    mUpdateProgress.setVisibility(View.INVISIBLE);
-                    mUpdateControl.setVisibility(View.INVISIBLE);
                 case Constants.UPDATE_FAILED:
                     update.setProgress(0);
                     mUpdateProgress.setVisibility(View.INVISIBLE);
                     mUpdateProgressText.setText(R.string.reboot_try_again);
-                    mUpdateControl.setVisibility(View.VISIBLE);
                     mUpdateControl.setText(R.string.reboot_device);
                     mPauseResume.setVisibility(View.INVISIBLE);
                     try {
@@ -209,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements MainViewControlle
                     mUpdateProgressText.setText(getString(R.string.update_finalizing, Integer.toString(updateProgress)));
                     break;
                 case Constants.UPDATE_IN_PROGRESS:
-                    mUpdateControl.setVisibility(View.VISIBLE);
                     mPauseResume.setVisibility(View.VISIBLE);
                     mPauseResume.setText(R.string.pause_update);
                     mUpdateControl.setText(R.string.cancel_update);
